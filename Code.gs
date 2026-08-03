@@ -87,3 +87,13 @@ function getPage(page) {
     .getContent();
 
 }
+
+function getAllTransactions() {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Transactions");
+
+  return sheet.getDataRange().getDisplayValues();
+
+}
