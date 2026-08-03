@@ -1,0 +1,42 @@
+<script>
+
+function loadTransactions(){
+
+    google.script.run
+    .withSuccessHandler(showData)
+    .getTransactions();
+
+}
+
+function showData(data){
+
+    let html="";
+
+    html+="<tr>";
+
+    data[0].forEach(h=>{
+        html+=`<th>${h}</th>`;
+    });
+
+    html+="</tr>";
+
+    for(let i=1;i<data.length;i++){
+
+        html+="<tr>";
+
+        data[i].forEach(col=>{
+
+            html+=`<td>${col}</td>`;
+
+        });
+
+        html+="</tr>";
+    }
+
+    document.getElementById("tbl").innerHTML=html;
+
+}
+
+window.onload=loadTransactions;
+
+</script>
