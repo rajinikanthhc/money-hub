@@ -1,5 +1,33 @@
 <script>
 
-console.log("Dashboard Loaded");
+function loadDashboard(){
+
+  google.script.run
+  .withSuccessHandler(showDashboard)
+  .getDashboardData();
+
+}
+
+function showDashboard(data){
+
+  document.getElementById("balance").innerHTML =
+      "₹" + data.balance.toLocaleString();
+
+  document.getElementById("income").innerHTML =
+      "₹" + data.income.toLocaleString();
+
+  document.getElementById("expense").innerHTML =
+      "₹" + data.expense.toLocaleString();
+
+  document.getElementById("saving").innerHTML =
+      "₹" + data.savings.toLocaleString();
+
+}
+
+window.onload=function(){
+
+    loadDashboard();
+
+}
 
 </script>
