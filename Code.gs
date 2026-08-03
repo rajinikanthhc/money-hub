@@ -312,3 +312,61 @@ function getAllAccountNames() {
   return list;
 
 }
+
+function getMonthlyBudget() {
+
+  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
+
+  const budgetSheet = ss.getSheetByName("Monthly Budget");
+  const categorySheet = ss.getSheetByName("Categories");
+  const transactionSheet = ss.getSheetByName("Transactions");
+
+  const budgets = budgetSheet.getDataRange().getDisplayValues();
+  const categories = categorySheet.getDataRange().getDisplayValues();
+  const transactions = transactionSheet.getDataRange().getDisplayValues();
+
+  // Category -> Budget Group
+  let categoryMap = {};
+
+  for (let i = 1; i < categories.length; i++) {
+
+    categoryMap[categories[i][1]] = categories[i][3];
+
+  }
+
+  let result = [];
+
+  for (let i = 1; i < budgets.length; i++) {
+
+    const group = budgets[i][1];
+    const budget = Number(budgets[i][2]);
+
+    let actual = 0;
+
+    for (let j = 1; j < transactions.length; j++) {
+
+      const category = transactions[j][3];
+      const amount = Number(transactions[j][5]);
+
+      if (categoryMap[category] == group) {
+
+        actual += amount;
+
+      }
+
+    }
+
+    result.push({
+
+      group: group,
+      budget: budget,
+      actual: actual,
+      remaining: budget - actual
+
+    });
+
+  }
+
+  return result;
+
+}

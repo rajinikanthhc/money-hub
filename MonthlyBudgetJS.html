@@ -1,0 +1,51 @@
+<script>
+
+function loadMonthlyBudget(){
+
+    google.script.run
+        .withSuccessHandler(showMonthlyBudget)
+        .getMonthlyBudget();
+
+}
+
+function showMonthlyBudget(data){
+
+    let html = "";
+
+    data.forEach(function(row){
+
+        let status = "🟢";
+
+        if(row.remaining < 0){
+
+            status = "🔴";
+
+        }else if(row.remaining < row.budget * 0.2){
+
+            status = "🟡";
+
+        }
+
+        html += `
+        <tr>
+
+            <td>${row.group}</td>
+
+            <td>₹${Number(row.budget).toLocaleString("en-IN")}</td>
+
+            <td>₹${Number(row.actual).toLocaleString("en-IN")}</td>
+
+            <td>₹${Number(row.remaining).toLocaleString("en-IN")}</td>
+
+            <td style="font-size:22px;">${status}</td>
+
+        </tr>
+        `;
+
+    });
+
+    document.getElementById("budgetTable").innerHTML = html;
+
+}
+
+</script>
