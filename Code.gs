@@ -31,19 +31,25 @@ function getTransactions() {
 
 function getDashboardData() {
 
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
+  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
 
-  const data = sheet.getDataRange().getDisplayValues();
+  // Transactions
+  const transSheet = ss.getSheetByName("Transactions");
+  const transData = transSheet.getDataRange().getDisplayValues();
+
+  // Accounts
+  const accountSheet = ss.getSheetByName("Accounts");
+  const accountData = accountSheet.getDataRange().getDisplayValues();
 
   let income = 0;
   let expense = 0;
+  let openingBalance = 0;
 
-  for (let i = 1; i < data.length; i++) {
+  // Calculate Income & Expense
+  for (let i = 1; i < transData.length; i++) {
 
-    const type = data[i][2];          // Type
-    const amount = Number(data[i][5]); // Amount
+    const type = transData[i][2];
+    const amount = Number(transData[i][5]);
 
     if (type === "Income") {
       income += amount;
@@ -53,14 +59,23 @@ function getDashboardData() {
 
   }
 
+  // Calculate Opening Balance
+  for (let i = 1; i < accountData.length; i++) {
+
+    openingBalance += Number(accountData[i][3]) || 0;
+
+  }
+
   return {
+
     income: income,
     expense: expense,
     savings: income - expense,
-    balance: income - expense
+    balance: openingBalance + income - expense
+
   };
 
-}
+} 
 
 function getRecentTransactions() {
 
