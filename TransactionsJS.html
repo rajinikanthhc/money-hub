@@ -112,14 +112,20 @@ function saveTransaction(){
     };
 
     const runner = google.script.run
-        .withSuccessHandler(function(){
+    .withSuccessHandler(function(){
 
-            closeTransactionForm();
-            clearTransactionForm();
-            loadTransactions();
-            loadDashboard();
+        editRow = 0;
 
-        });
+        closeTransactionForm();
+        clearTransactionForm();
+        loadTransactions();
+        loadDashboard();
+
+    })
+    .withFailureHandler(function(err){
+        console.log(err);
+        alert(err.message);
+    });
 
     if(editRow == 0){
 
