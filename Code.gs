@@ -1,6 +1,6 @@
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
-      .setTitle('Money Hub');
+  const template = HtmlService.createTemplateFromFile('Index');
+  return template.evaluate().setTitle('Money Hub');
 }
 
 function include(filename) {
@@ -9,8 +9,8 @@ function include(filename) {
 
 function getTransactions() {
   const sheet = SpreadsheetApp
-      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-      .getSheetByName("Transactions");
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Transactions");
 
   return sheet.getDataRange().getValues();
 }
