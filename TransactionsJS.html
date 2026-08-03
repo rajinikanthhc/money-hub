@@ -1,9 +1,16 @@
 <script>
 
+let transactions = [];
+
 function loadTransactions(){
 
     google.script.run
-        .withSuccessHandler(showTransactions)
+        .withSuccessHandler(function(data){
+
+            transactions = data;
+            showTransactions(data);
+
+        })
         .getAllTransactions();
 
 }
@@ -14,40 +21,91 @@ function showTransactions(data){
 
     for(let i=1;i<data.length;i++){
 
-        html+=`
-
+        html += `
         <tr>
 
-        <td>${data[i][0]}</td>
-        <td>${data[i][1]}</td>
-        <td>${data[i][2]}</td>
-        <td>${data[i][3]}</td>
-        <td>${data[i][4]}</td>
-        <td>₹${Number(data[i][5]).toLocaleString()}</td>
-        <td>${data[i][6]}</td>
-        <td>${data[i][7]}</td>
+            <td>${data[i][0]}</td>
+            <td>${data[i][1]}</td>
+            <td>${data[i][2]}</td>
+            <td>${data[i][3]}</td>
+            <td>${data[i][4]}</td>
+            <td>₹${Number(data[i][5]).toLocaleString("en-IN")}</td>
+            <td>${data[i][6]}</td>
+            <td>${data[i][7]}</td>
 
-        <td>
+            <td>
 
-        <button>Edit</button>
+                <button onclick="editTransaction(${i})">
+                    ✏️
+                </button>
 
-        <button>Delete</button>
+                <button onclick="deleteTransaction(${i})">
+                    🗑️
+                </button>
 
-        </td>
+            </td>
 
         </tr>
-
         `;
 
     }
 
-    document.getElementById("transactionTable").innerHTML=html;
+    document.getElementById("transactionTable").innerHTML = html;
+
+}
+
+function searchTransactions(){
+
+    const keyword = document
+        .getElementById("searchTransaction")
+        .value
+        .toLowerCase();
+
+    let filtered = [];
+
+    filtered.push(transactions[0]);
+
+    for(let i=1;i<transactions.length;i++){
+
+        if(transactions[i].join(" ").toLowerCase().includes(keyword)){
+
+            filtered.push(transactions[i]);
+
+        }
+
+    }
+
+    showTransactions(filtered);
 
 }
 
 function openTransactionForm(){
 
-    alert("Transaction Form - Coming Next");
+    document.getElementById("transactionModal").style.display = "flex";
+
+}
+
+function closeTransactionForm(){
+
+    document.getElementById("transactionModal").style.display = "none";
+
+}
+
+function saveTransaction(){
+
+    alert("Save Transaction - Next Step");
+
+}
+
+function editTransaction(row){
+
+    alert("Edit Transaction - Coming Next");
+
+}
+
+function deleteTransaction(row){
+
+    alert("Delete Transaction - Coming Next");
 
 }
 
