@@ -111,19 +111,26 @@ function saveTransaction(){
 
     };
 
-    google.script.run
+    const runner = google.script.run
         .withSuccessHandler(function(){
 
             closeTransactionForm();
-
+            clearTransactionForm();
             loadTransactions();
-
             loadDashboard();
 
-            clearTransactionForm();
+        });
 
-        })
-        .saveTransaction(data);
+    if(editRow == 0){
+
+        runner.saveTransaction(data);
+
+    }else{
+
+        data.row = editRow;
+        runner.updateTransaction(data);
+
+    }
 
 }
 

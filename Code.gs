@@ -120,3 +120,27 @@ function saveTransaction(data) {
   return true;
 
 }
+
+function updateTransaction(data) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Transactions");
+
+  sheet.getRange(data.row + 1, 2, 1, 7).setValues([[
+    Utilities.formatDate(
+      new Date(data.date),
+      Session.getScriptTimeZone(),
+      "dd-MMM-yyyy"
+    ),
+    data.type,
+    data.category,
+    data.account,
+    data.amount,
+    data.payment,
+    data.description
+  ]]);
+
+  return true;
+
+}
