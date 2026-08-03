@@ -88,6 +88,7 @@ function openTransactionForm(){
     clearTransactionForm();
 
     loadCategoryDropdown("Income");
+loadAccountDropdown();
 
     document.getElementById("transactionModal").style.display = "flex";
 
@@ -200,7 +201,7 @@ function editTransaction(row){
         formatDateForInput(t[1]);
 
     document.getElementById("tType").value = t[2];
-    loadCategoryDropdown(t[2], t[3]);
+    loadAccountDropdown(t[4]);
     document.getElementById("tAccount").value = t[4];
     document.getElementById("tAmount").value = t[5];
     document.getElementById("tPayment").value = t[6];
@@ -224,6 +225,28 @@ function deleteTransaction(row){
 
         })
         .deleteTransaction(row);
+
+}
+
+function loadAccountDropdown(selected = "") {
+
+    google.script.run
+        .withSuccessHandler(function(list){
+
+            let html = "";
+
+            list.forEach(function(account){
+
+                html += `<option value="${account}" ${
+                    account === selected ? "selected" : ""
+                }>${account}</option>`;
+
+            });
+
+            document.getElementById("tAccount").innerHTML = html;
+
+        })
+        .getAllAccountNames();
 
 }
 

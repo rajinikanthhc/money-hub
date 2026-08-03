@@ -292,3 +292,23 @@ function deleteAccount(row) {
   return true;
 
 }
+
+function getAllAccountNames() {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Accounts");
+
+  const data = sheet.getDataRange().getDisplayValues();
+
+  let list = [];
+
+  for (let i = 1; i < data.length; i++) {
+
+    list.push(data[i][1]);
+
+  }
+
+  return list;
+
+}
