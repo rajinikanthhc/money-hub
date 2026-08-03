@@ -1,3 +1,85 @@
 <h2>Accounts</h2>
 
-<p>Accounts module coming next...</p>
+<br>
+
+<button onclick="openAccountForm()">
+➕ Add Account
+</button>
+
+<input
+    type="text"
+    id="searchAccount"
+    placeholder="Search..."
+    onkeyup="searchAccounts()">
+
+<br><br>
+
+<table class="table">
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Account</th>
+<th>Type</th>
+<th>Opening Balance</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody id="accountTable">
+
+</tbody>
+
+</table>
+
+<div class="modal" id="accountModal" style="display:none;">
+
+<div class="modal-content">
+
+<h2>Add Account</h2>
+
+<br>
+
+<label>Account</label>
+
+<input
+type="text"
+id="aName">
+
+<label>Type</label>
+
+<select id="aType">
+
+<option>Bank</option>
+<option>Cash</option>
+<option>Credit Card</option>
+
+</select>
+
+<label>Opening Balance</label>
+
+<input
+type="number"
+id="aBalance">
+
+<br><br>
+
+<button onclick="saveAccount()">
+
+Save
+
+</button>
+
+<button onclick="closeAccountForm()">
+
+Cancel
+
+</button>
+
+</div>
+
+</div>

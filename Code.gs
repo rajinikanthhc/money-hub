@@ -235,3 +235,60 @@ function getCategoriesByType(type) {
   return list;
 
 }
+
+function getAllAccounts() {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Accounts");
+
+  return sheet.getDataRange().getDisplayValues();
+
+}
+
+function saveAccount(data) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Accounts");
+
+  const id = sheet.getLastRow();
+
+  sheet.appendRow([
+    id,
+    data.account,
+    data.type,
+    data.balance
+  ]);
+
+  return true;
+
+}
+
+function updateAccount(data) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Accounts");
+
+  sheet.getRange(data.row + 1, 2, 1, 3).setValues([[
+    data.account,
+    data.type,
+    data.balance
+  ]]);
+
+  return true;
+
+}
+
+function deleteAccount(row) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Accounts");
+
+  sheet.deleteRow(row + 1);
+
+  return true;
+
+}
