@@ -188,7 +188,18 @@ function editTransaction(row){
 
 function deleteTransaction(row){
 
-    alert("Delete Transaction - Coming Next");
+    if(!confirm("Are you sure you want to delete this transaction?")){
+        return;
+    }
+
+    google.script.run
+        .withSuccessHandler(function(){
+
+            loadTransactions();
+            loadDashboard();
+
+        })
+        .deleteTransaction(row);
 
 }
 

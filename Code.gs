@@ -144,3 +144,15 @@ function updateTransaction(data) {
   return true;
 
 }
+
+function deleteTransaction(row){
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Transactions");
+
+  sheet.deleteRow(row + 1);
+
+  return true;
+
+}
