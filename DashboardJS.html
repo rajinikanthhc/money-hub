@@ -32,21 +32,20 @@ function showRecentTransactions(data) {
 
   let html = "";
 
-  for (let i = data.length - 1; i >= 1; i--) {
+  data.forEach(function(row) {
 
     html += `
       <tr>
-        <td>${data[i][1]}</td>
-        <td>${data[i][2]}</td>
-        <td>${data[i][3]}</td>
-        <td>₹${Number(data[i][5]).toLocaleString("en-IN")}</td>
+        <td>${row[1]}</td>
+        <td>${row[2]}</td>
+        <td>${row[3]}</td>
+        <td>₹${Number(row[5]).toLocaleString("en-IN")}</td>
       </tr>
     `;
 
-  }
+  });
 
   document.getElementById("recentTransactions").innerHTML = html;
 
 }
-
 </script>
