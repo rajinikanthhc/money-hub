@@ -370,3 +370,142 @@ function getMonthlyBudget() {
   return result;
 
 }
+
+function getReportData() {
+
+  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
+
+  const transSheet = ss.getSheetByName("Transactions");
+  const catSheet = ss.getSheetByName("Categories");
+
+  const transactions = transSheet.getDataRange().getDisplayValues();
+  const categories = catSheet.getDataRange().getDisplayValues();
+
+  // Category -> Budget Group
+  let categoryMap = {};
+
+  for (let i = 1; i < categories.length; i++) {
+    categoryMap[categories[i][1]] = categories[i][3];
+  }
+
+  let income = 0;
+  let expense = 0;
+
+  let budgetSummary = {};
+  let categorySummary = {};
+
+  for (let i = 1; i < transactions.length; i++) {
+
+    const type = transactions[i][2];
+    const category = transactions[i][3];
+    const amount = Number(transactions[i][5]);
+
+    if (type == "Income") {
+
+      income += amount;
+
+    } else {
+
+      expense += amount;
+
+      // Category Summary
+      categorySummary[category] =
+        (categorySummary[category] || 0) + amount;
+
+      // Budget Group Summary
+      const group = categoryMap[category] || "Others";
+
+      budgetSummary[group] =
+        (budgetSummary[group] || 0) + amount;
+    }
+
+  }
+
+  return {
+
+    income: income,
+    expense: expense,
+    savings: income - expense,
+    balance: income - expense,
+
+    budgetSummary: budgetSummary,
+    categorySummary: categorySummary
+
+  };
+
+}
+
+function drawBudgetChart(data){
+
+    const chartData = [["Budget Group","Amount"]];
+
+    for(let group in data.budgetSummary){
+
+        chartData.push([group,data.budgetSummary[group]]);
+
+    }
+
+    const chart = new google.visualization.PieChart(
+        document.getElementById("budgetChart")
+    );
+
+    chart.draw(
+        google.visualization.arrayToDataTable(chartData),
+        {
+            legend:{position:"right"},
+            pieHole:0.4
+        }
+    );
+
+}
+
+function drawCategoryChart(data){
+
+    const chartData = [["Category","Amount"]];
+
+    for(let cat in data.categorySummary){
+
+        chartData.push([cat,data.categorySummary[cat]]);
+
+    }
+
+    const chart = new google.visualization.PieChart(
+        document.getElementById("categoryChart")
+    );
+
+    chart.draw(
+        google.visualization.arrayToDataTable(chartData),
+        {
+            legend:{position:"right"}
+        }
+    );
+
+}
+
+function drawIncomeExpenseChart(data){
+
+    const chart = new google.visualization.ColumnChart(
+        document.getElementById("incomeExpenseChart")
+    );
+
+    chart.draw(
+
+        google.visualization.arrayToDataTable([
+
+            ["Type","Amount"],
+
+            ["Income",data.income],
+
+            ["Expense",data.expense]
+
+        ]),
+
+        {
+
+            legend:"none"
+
+        }
+
+    );
+
+}

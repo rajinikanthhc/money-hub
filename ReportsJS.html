@@ -1,0 +1,201 @@
+<script>
+
+google.charts.load('current', {'packages':['corechart']});
+
+function loadReports(){
+
+    google.script.run
+        .withSuccessHandler(showReports)
+        .getReportData();
+
+}
+
+function showReports(data){
+
+    // Summary Cards
+
+    document.getElementById("rIncome").innerHTML =
+        "₹" + Number(data.income).toLocaleString("en-IN");
+
+    document.getElementById("rExpense").innerHTML =
+        "₹" + Number(data.expense).toLocaleString("en-IN");
+
+    document.getElementById("rSavings").innerHTML =
+        "₹" + Number(data.savings).toLocaleString("en-IN");
+
+    document.getElementById("rBalance").innerHTML =
+        "₹" + Number(data.balance).toLocaleString("en-IN");
+
+
+    // Budget Group Table
+
+    let budgetHtml = "";
+
+    for(let group in data.budgetSummary){
+
+        budgetHtml += `
+        <tr>
+            <td>${group}</td>
+            <td>₹${Number(data.budgetSummary[group]).toLocaleString("en-IN")}</td>
+        </tr>
+        `;
+
+    }
+
+    document.getElementById("budgetReport").innerHTML = budgetHtml;
+
+
+    // Category Table
+
+    let categoryHtml = "";
+
+    for(let category in data.categorySummary){
+
+        categoryHtml += `
+        <tr>
+            <td>${category}</td>
+            <td>₹${Number(data.categorySummary[category]).toLocaleString("en-IN")}</td>
+        </tr>
+        `;
+
+    }
+
+    document.getElementById("categoryReport").innerHTML = categoryHtml;
+
+
+    // Draw Charts
+
+    google.charts.setOnLoadCallback(function(){
+
+        drawBudgetChart(data);
+        drawCategoryChart(data);
+        drawIncomeExpenseChart(data);
+
+    });
+
+}
+
+
+
+function drawBudgetChart(data){
+
+    const chartData = [["Budget Group","Amount"]];
+
+    for(let group in data.budgetSummary){
+
+        chartData.push([
+            group,
+            data.budgetSummary[group]
+        ]);
+
+    }
+
+    const chart = new google.visualization.PieChart(
+        document.getElementById("budgetChart")
+    );
+
+    chart.draw(
+
+        google.visualization.arrayToDataTable(chartData),
+
+        {
+
+            title:"",
+
+            pieHole:0.45,
+
+            legend:{
+                position:"right"
+            }
+
+        }
+
+    );
+
+}
+
+
+
+function drawCategoryChart(data){
+
+    const chartData = [["Category","Amount"]];
+
+    for(let category in data.categorySummary){
+
+        chartData.push([
+            category,
+            data.categorySummary[category]
+        ]);
+
+    }
+
+    const chart = new google.visualization.PieChart(
+
+        document.getElementById("categoryChart")
+
+    );
+
+    chart.draw(
+
+        google.visualization.arrayToDataTable(chartData),
+
+        {
+
+            title:"",
+
+            legend:{
+                position:"right"
+            }
+
+        }
+
+    );
+
+}
+
+
+
+function drawIncomeExpenseChart(data){
+
+    const chart = new google.visualization.ColumnChart(
+
+        document.getElementById("incomeExpenseChart")
+
+    );
+
+    chart.draw(
+
+        google.visualization.arrayToDataTable([
+
+            ["Type","Amount"],
+
+            ["Income",data.income],
+
+            ["Expense",data.expense]
+
+        ]),
+
+        {
+
+            legend:"none",
+
+            chartArea:{
+                width:"70%",
+                height:"70%"
+            },
+
+            hAxis:{
+                title:"Type"
+            },
+
+            vAxis:{
+                title:"Amount"
+            }
+
+        }
+
+    );
+
+}
+
+</script>

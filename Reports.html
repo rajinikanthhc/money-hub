@@ -1,3 +1,123 @@
 <h2>Reports</h2>
 
-<p>Reports module coming next...</p>
+<br>
+
+<select id="reportFilter" onchange="loadReports()">
+
+    <option value="Today">Today</option>
+    <option value="This Month" selected>This Month</option>
+    <option value="This Year">This Year</option>
+
+</select>
+
+<br><br>
+
+<div class="cards">
+
+    <div class="card">
+        <h3>Income</h3>
+        <h1 id="rIncome">₹0</h1>
+    </div>
+
+    <div class="card">
+        <h3>Expense</h3>
+        <h1 id="rExpense">₹0</h1>
+    </div>
+
+    <div class="card">
+        <h3>Savings</h3>
+        <h1 id="rSavings">₹0</h1>
+    </div>
+
+    <div class="card">
+        <h3>Balance</h3>
+        <h1 id="rBalance">₹0</h1>
+    </div>
+
+</div>
+
+<br>
+
+<div class="cards">
+
+    <div class="card">
+
+        <h3>Expense by Budget Group</h3>
+
+        <div id="budgetChart" style="width:100%; height:350px;"></div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Expense by Category</h3>
+
+        <div id="categoryChart" style="width:100%; height:350px;"></div>
+
+    </div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+    <h3>Income vs Expense</h3>
+
+    <div id="incomeExpenseChart" style="width:100%; height:400px;"></div>
+
+</div>
+
+<br>
+
+<div class="card">
+
+    <h3>Budget Group Summary</h3>
+
+    <table class="table">
+
+        <thead>
+
+            <tr>
+
+                <th>Budget Group</th>
+                <th>Amount</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="budgetReport">
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<br>
+
+<div class="card">
+
+    <h3>Category Summary</h3>
+
+    <table class="table">
+
+        <thead>
+
+            <tr>
+
+                <th>Category</th>
+                <th>Amount</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody id="categoryReport">
+
+        </tbody>
+
+    </table>
+
+</div>
