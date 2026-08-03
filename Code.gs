@@ -156,3 +156,58 @@ function deleteTransaction(row){
   return true;
 
 }
+
+function getAllCategories() {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Categories");
+
+  return sheet.getDataRange().getDisplayValues();
+
+}
+
+function saveCategory(data) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Categories");
+
+  const id = sheet.getLastRow();
+
+  sheet.appendRow([
+    id,
+    data.category,
+    data.type
+  ]);
+
+  return true;
+
+}
+
+function updateCategory(data) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Categories");
+
+  sheet.getRange(data.row + 1, 2, 1, 2).setValues([[
+    data.category,
+    data.type
+  ]]);
+
+  return true;
+
+}
+
+function deleteCategory(row) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Categories");
+
+  sheet.deleteRow(row + 1);
+
+  return true;
+
+}

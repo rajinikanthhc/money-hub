@@ -1,51 +1,157 @@
 <script>
 
-function loadDashboard() {
+let categories = [];
+let editCategoryRow = 0;
 
-  google.script.run
-    .withSuccessHandler(showDashboard)
-    .getDashboardData();
+function loadCategories(){
 
-  google.script.run
-    .withSuccessHandler(showRecentTransactions)
-    .getRecentTransactions();
+    google.script.run
+        .withSuccessHandler(function(data){
 
-}
+            categories = data;
+            showCategories(data);
 
-function showDashboard(data) {
-
-  document.getElementById("balance").innerHTML =
-    "₹" + Number(data.balance).toLocaleString("en-IN");
-
-  document.getElementById("income").innerHTML =
-    "₹" + Number(data.income).toLocaleString("en-IN");
-
-  document.getElementById("expense").innerHTML =
-    "₹" + Number(data.expense).toLocaleString("en-IN");
-
-  document.getElementById("saving").innerHTML =
-    "₹" + Number(data.savings).toLocaleString("en-IN");
+        })
+        .getAllCategories();
 
 }
 
-function showRecentTransactions(data) {
+function showCategories(data){
 
-  let html = "";
+    let html = "";
 
-  for (let i = data.length - 1; i >= 1; i--) {
+    for(let i=1;i<data.length;i++){
 
-    html += `
-      <tr>
-        <td>${data[i][1]}</td>
-        <td>${data[i][2]}</td>
-        <td>${data[i][3]}</td>
-        <td>₹${Number(data[i][5]).toLocaleString("en-IN")}</td>
-      </tr>
-    `;
+        html += `
+        <tr>
 
-  }
+            <td>${data[i][0]}</td>
+            <td>${data[i][1]}</td>
+            <td>${data[i][2]}</td>
 
-  document.getElementById("recentTransactions").innerHTML = html;
+            <td>
+
+                <button onclick="editCategory(${i})">
+                    ✏️
+                </button>
+
+                <button onclick="deleteCategory(${i})">
+                    🗑️
+                </button>
+
+            </td>
+
+        </tr>
+        `;
+
+    }
+
+    document.getElementById("categoryTable").innerHTML = html;
+
+}
+
+function searchCategories(){
+
+    const keyword = document
+        .getElementById("searchCategory")
+        .value
+        .toLowerCase();
+
+    let filtered = [];
+
+    filtered.push(categories[0]);
+
+    for(let i=1;i<categories.length;i++){
+
+        if(categories[i].join(" ").toLowerCase().includes(keyword)){
+
+            filtered.push(categories[i]);
+
+        }
+
+    }
+
+    showCategories(filtered);
+
+}
+
+function openCategoryForm(){
+
+    editCategoryRow = 0;
+
+    clearCategoryForm();
+
+    document.getElementById("categoryModal").style.display = "flex";
+
+}
+
+function closeCategoryForm(){
+
+    document.getElementById("categoryModal").style.display = "none";
+
+}
+
+function clearCategoryForm(){
+
+    document.getElementById("cName").value = "";
+    document.getElementById("cType").value = "Income";
+
+}
+
+function saveCategory(){
+
+    const data = {
+
+        category : document.getElementById("cName").value,
+        type : document.getElementById("cType").value
+
+    };
+
+    const runner = google.script.run
+        .withSuccessHandler(function(){
+
+            editCategoryRow = 0;
+
+            closeCategoryForm();
+
+            clearCategoryForm();
+
+            loadCategories();
+
+        });
+
+    if(editCategoryRow == 0){
+
+        runner.saveCategory(data);
+
+    }else{
+
+        data.row = editCategoryRow;
+
+        runner.updateCategory(data);
+
+    }
+
+}
+
+function editCategory(row){
+
+    editCategoryRow = row;
+
+    document.getElementById("cName").value = categories[row][1];
+    document.getElementById("cType").value = categories[row][2];
+
+    document.getElementById("categoryModal").style.display = "flex";
+
+}
+
+function deleteCategory(row){
+
+    if(!confirm("Delete this category?")) return;
+
+    google.script.run
+        .withSuccessHandler(loadCategories)
+        .deleteCategory(row);
 
 }
 

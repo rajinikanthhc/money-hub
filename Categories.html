@@ -1,3 +1,69 @@
 <h2>Categories</h2>
 
-<p>Categories module coming next...</p>
+<br>
+
+<button onclick="openCategoryForm()">
+➕ Add Category
+</button>
+
+<input
+    type="text"
+    id="searchCategory"
+    placeholder="Search..."
+    onkeyup="searchCategories()">
+
+<br><br>
+
+<table class="table">
+
+<thead>
+
+<tr>
+    <th>ID</th>
+    <th>Category</th>
+    <th>Type</th>
+    <th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="categoryTable">
+
+</tbody>
+
+</table>
+
+<div class="modal" id="categoryModal" style="display:none;">
+
+<div class="modal-content">
+
+<h2>Add Category</h2>
+
+<br>
+
+<label>Category</label>
+
+<input
+    type="text"
+    id="cName">
+
+<label>Type</label>
+
+<select id="cType">
+    <option>Income</option>
+    <option>Expense</option>
+</select>
+
+<br><br>
+
+<button onclick="saveCategory()">
+Save
+</button>
+
+<button onclick="closeCategoryForm()">
+Cancel
+</button>
+
+</div>
+
+</div>
