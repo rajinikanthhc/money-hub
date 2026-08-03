@@ -42,26 +42,22 @@ function getDashboardData() {
 
   for (let i = 1; i < data.length; i++) {
 
-    const type = data[i][1];
-    const amount = Number(data[i][4]);
+    const type = data[i][2];          // Type
+    const amount = Number(data[i][5]); // Amount
 
-    if (type === "Income")
+    if (type === "Income") {
       income += amount;
-
-    if (type === "Expense")
+    } else if (type === "Expense") {
       expense += amount;
+    }
+
   }
 
   return {
-
     income: income,
-
     expense: expense,
-
     savings: income - expense,
-
     balance: income - expense
-
   };
 
 }
