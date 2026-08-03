@@ -93,3 +93,26 @@ function getAllTransactions() {
   return sheet.getDataRange().getDisplayValues();
 
 }
+
+function saveTransaction(data) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Transactions");
+
+  const id = sheet.getLastRow();
+
+  sheet.appendRow([
+    id,
+    data.date,
+    data.type,
+    data.category,
+    data.account,
+    data.amount,
+    data.payment,
+    data.description
+  ]);
+
+  return true;
+
+}

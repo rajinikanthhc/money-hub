@@ -93,7 +93,43 @@ function closeTransactionForm(){
 
 function saveTransaction(){
 
-    alert("Save Transaction - Next Step");
+    const data = {
+
+        date: document.getElementById("tDate").value,
+        type: document.getElementById("tType").value,
+        category: document.getElementById("tCategory").value,
+        account: document.getElementById("tAccount").value,
+        amount: document.getElementById("tAmount").value,
+        payment: document.getElementById("tPayment").value,
+        description: document.getElementById("tDescription").value
+
+    };
+
+    google.script.run
+        .withSuccessHandler(function(){
+
+            closeTransactionForm();
+
+            loadTransactions();
+
+            loadDashboard();
+
+            clearTransactionForm();
+
+        })
+        .saveTransaction(data);
+
+}
+
+function clearTransactionForm(){
+
+    document.getElementById("tDate").value="";
+    document.getElementById("tType").value="Income";
+    document.getElementById("tCategory").value="";
+    document.getElementById("tAccount").value="";
+    document.getElementById("tAmount").value="";
+    document.getElementById("tPayment").value="";
+    document.getElementById("tDescription").value="";
 
 }
 
