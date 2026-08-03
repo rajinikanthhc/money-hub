@@ -4,17 +4,29 @@
 
 <ul>
 
-<li>🏠 Dashboard</li>
+<li onclick="loadPage('Dashboard')" class="menu-item active">
+🏠 Dashboard
+</li>
 
-<li>💸 Transactions</li>
+<li onclick="loadPage('Transactions')" class="menu-item">
+💸 Transactions
+</li>
 
-<li>📂 Categories</li>
+<li onclick="loadPage('Categories')" class="menu-item">
+📂 Categories
+</li>
 
-<li>🏦 Accounts</li>
+<li onclick="loadPage('Accounts')" class="menu-item">
+🏦 Accounts
+</li>
 
-<li>📊 Reports</li>
+<li onclick="loadPage('Reports')" class="menu-item">
+📊 Reports
+</li>
 
-<li>⚙ Settings</li>
+<li onclick="loadPage('Settings')" class="menu-item">
+⚙ Settings
+</li>
 
 </ul>
 
@@ -24,19 +36,19 @@
 
 .sidebar{
 
-width:240px;
+width:250px;
 
-background:#1e3a8a;
+background:linear-gradient(180deg,#1e3a8a,#1e40af);
 
 color:white;
 
-padding:20px;
+padding:25px 20px;
 
 }
 
 .sidebar h2{
 
-margin-bottom:30px;
+margin-bottom:35px;
 
 }
 
@@ -46,17 +58,29 @@ list-style:none;
 
 }
 
-.sidebar li{
+.menu-item{
 
-padding:12px 0;
+padding:14px 16px;
+
+margin-bottom:8px;
+
+border-radius:10px;
 
 cursor:pointer;
 
+transition:.25s;
+
 }
 
-.sidebar li:hover{
+.menu-item:hover{
 
-opacity:.8;
+background:rgba(255,255,255,.15);
+
+}
+
+.active{
+
+background:rgba(255,255,255,.25);
 
 }
 

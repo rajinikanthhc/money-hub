@@ -1,35 +1,29 @@
 <script>
 
-function loadTransactions() {
+function loadPage(page){
 
-  google.script.run
-    .withSuccessHandler(showData)
-    .withFailureHandler(function(err){
-      alert(err.message);
-      console.log(err);
-    })
-    .getTransactions();
+    const pages = {
 
-}
+        Dashboard : `<?!= include("Dashboard"); ?>`,
 
-function showData(data) {
+        Transactions : `<?!= include("Transactions"); ?>`,
 
-  let html = "<tr>";
+        Categories : `<?!= include("Categories"); ?>`,
 
-  data[0].forEach(h => html += `<th>${h}</th>`);
+        Accounts : `<?!= include("Accounts"); ?>`,
 
-  html += "</tr>";
+        Reports : `<?!= include("Reports"); ?>`,
 
-  for (let i = 1; i < data.length; i++) {
+        Settings : `<?!= include("Settings"); ?>`
 
-    html += "<tr>";
+    };
 
-    data[i].forEach(col => html += `<td>${col}</td>`);
+    document.getElementById("pageContent").innerHTML = pages[page];
 
-    html += "</tr>";
-  }
+    document.querySelectorAll(".menu-item")
+    .forEach(item=>item.classList.remove("active"));
 
-  document.getElementById("tbl").innerHTML = html;
+    event.target.classList.add("active");
 
 }
 
