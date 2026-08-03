@@ -2,19 +2,35 @@
 
 function initDashboard(){
 
+    console.log("Dashboard Initialized");
+
     loadDashboard();
 
 }
 
 function loadDashboard(){
 
-    google.script.run
-    .withSuccessHandler(showDashboard)
-    .getDashboardData();
+    console.log("Loading Dashboard Data");
 
     google.script.run
-    .withSuccessHandler(showRecentTransactions)
-    .getRecentTransactions();
+        .withSuccessHandler(function(data){
+
+            console.log("Dashboard Data", data);
+
+            showDashboard(data);
+
+        })
+        .getDashboardData();
+
+    google.script.run
+        .withSuccessHandler(function(data){
+
+            console.log("Recent Transactions", data);
+
+            showRecentTransactions(data);
+
+        })
+        .getRecentTransactions();
 
 }
 
