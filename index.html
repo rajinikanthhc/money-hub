@@ -20,9 +20,31 @@
 
       <?!= include('Header'); ?>
 
-      <div class="content" id="pageContent">
+      <div class="content">
 
-    <?!= include('Dashboard'); ?>
+    <div id="dashboardPage">
+        <?!= include('Dashboard'); ?>
+    </div>
+
+    <div id="transactionsPage" style="display:none;">
+        <?!= include('Transactions'); ?>
+    </div>
+
+    <div id="categoriesPage" style="display:none;">
+        <?!= include('Categories'); ?>
+    </div>
+
+    <div id="accountsPage" style="display:none;">
+        <?!= include('Accounts'); ?>
+    </div>
+
+    <div id="reportsPage" style="display:none;">
+        <?!= include('Reports'); ?>
+    </div>
+
+    <div id="settingsPage" style="display:none;">
+        <?!= include('Settings'); ?>
+    </div>
 
 </div>
 

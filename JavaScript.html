@@ -1,66 +1,62 @@
 <script>
 
-function loadPage(page){
+function showPage(page){
 
-    google.script.run
-        .withSuccessHandler(function(html){
+    const pages=[
+        "dashboardPage",
+        "transactionsPage",
+        "categoriesPage",
+        "accountsPage",
+        "reportsPage",
+        "settingsPage"
+    ];
 
-            document.getElementById("pageContent").innerHTML = html;
+    pages.forEach(function(id){
 
-            initializePage(page);
+        document.getElementById(id).style.display="none";
 
-        })
-        .getPage(page);
+    });
 
-}
-
-function initializePage(page){
+    document.getElementById(page).style.display="block";
 
     switch(page){
 
-        case "Dashboard":
-
-            if(typeof initDashboard==="function")
-                initDashboard();
-
+        case "dashboardPage":
+            loadDashboard();
             break;
 
-        case "Transactions":
-
-            if(typeof initTransactions==="function")
-                initTransactions();
-
+        case "transactionsPage":
+            if(typeof loadTransactions==="function")
+                loadTransactions();
             break;
 
-        case "Categories":
-
-            if(typeof initCategories==="function")
-                initCategories();
-
+        case "categoriesPage":
+            if(typeof loadCategories==="function")
+                loadCategories();
             break;
 
-        case "Accounts":
-
-            if(typeof initAccounts==="function")
-                initAccounts();
-
+        case "accountsPage":
+            if(typeof loadAccounts==="function")
+                loadAccounts();
             break;
 
-        case "Reports":
-
-            if(typeof initReports==="function")
-                initReports();
-
+        case "reportsPage":
+            if(typeof loadReports==="function")
+                loadReports();
             break;
 
-        case "Settings":
-
-            if(typeof initSettings==="function")
-                initSettings();
-
+        case "settingsPage":
+            if(typeof loadSettings==="function")
+                loadSettings();
             break;
 
     }
+
+}
+
+window.onload=function(){
+
+    loadDashboard();
 
 }
 
