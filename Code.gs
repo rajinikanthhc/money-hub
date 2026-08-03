@@ -211,3 +211,27 @@ function deleteCategory(row) {
   return true;
 
 }
+
+function getCategoriesByType(type) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Categories");
+
+  const data = sheet.getDataRange().getDisplayValues();
+
+  let list = [];
+
+  for (let i = 1; i < data.length; i++) {
+
+    if (data[i][2] == type) {
+
+      list.push(data[i][1]);
+
+    }
+
+  }
+
+  return list;
+
+}

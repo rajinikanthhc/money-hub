@@ -85,9 +85,11 @@ function openTransactionForm(){
 
     editRow = 0;
 
-    document.getElementById("transactionModal").style.display = "flex";
-
     clearTransactionForm();
+
+    loadCategoryDropdown("Income");
+
+    document.getElementById("transactionModal").style.display = "flex";
 
 }
 
@@ -152,6 +154,28 @@ function clearTransactionForm(){
 
 }
 
+function loadCategoryDropdown(type, selectedCategory = "") {
+
+    google.script.run
+        .withSuccessHandler(function(list) {
+
+            let html = "";
+
+            list.forEach(function(category) {
+
+                html += `<option value="${category}" ${
+                    category === selectedCategory ? "selected" : ""
+                }>${category}</option>`;
+
+            });
+
+            document.getElementById("tCategory").innerHTML = html;
+
+        })
+        .getCategoriesByType(type);
+
+}
+
 function formatDateForInput(date){
 
     const d = new Date(date);
@@ -176,7 +200,7 @@ function editTransaction(row){
         formatDateForInput(t[1]);
 
     document.getElementById("tType").value = t[2];
-    document.getElementById("tCategory").value = t[3];
+    loadCategoryDropdown(t[2], t[3]);
     document.getElementById("tAccount").value = t[4];
     document.getElementById("tAmount").value = t[5];
     document.getElementById("tPayment").value = t[6];

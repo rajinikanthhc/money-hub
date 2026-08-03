@@ -52,13 +52,13 @@ onkeyup="searchTransactions()">
 <input type="date" id="tDate">
 
 <label>Type</label>
-<select id="tType">
+<select id="tType" onchange="loadCategoryDropdown(this.value)">
 <option value="Income">Income</option>
 <option value="Expense">Expense</option>
 </select>
 
 <label>Category</label>
-<input type="text" id="tCategory">
+<select id="tCategory"></select>
 
 <label>Account</label>
 <input type="text" id="tAccount">
