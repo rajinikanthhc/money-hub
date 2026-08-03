@@ -104,7 +104,11 @@ function saveTransaction(data) {
 
   sheet.appendRow([
     id,
-    data.date,
+    Utilities.formatDate(
+    new Date(data.date),
+    Session.getScriptTimeZone(),
+    "dd-MMM-yyyy"
+),
     data.type,
     data.category,
     data.account,
