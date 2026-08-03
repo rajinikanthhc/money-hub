@@ -1,18 +1,16 @@
 <style>
 
 *{
-
 margin:0;
 padding:0;
 box-sizing:border-box;
-
 }
 
 body{
 
-font-family:Segoe UI,Arial,sans-serif;
+font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
 
-background:var(--bg);
+background:var(--background);
 
 color:var(--text);
 
@@ -24,6 +22,8 @@ display:flex;
 
 height:100vh;
 
+overflow:hidden;
+
 }
 
 .main{
@@ -34,11 +34,199 @@ display:flex;
 
 flex-direction:column;
 
+overflow:auto;
+
 }
 
 .content{
 
-padding:20px;
+padding:30px;
+
+}
+
+.header{
+
+height:75px;
+
+background:white;
+
+display:flex;
+
+align-items:center;
+
+padding:0 28px;
+
+border-bottom:1px solid var(--border);
+
+font-size:30px;
+
+font-weight:700;
+
+}
+
+.sidebar{
+
+width:250px;
+
+background:linear-gradient(180deg,#1e3a8a,#1e40af);
+
+color:white;
+
+padding:25px 20px;
+
+}
+
+.sidebar h2{
+
+margin-bottom:35px;
+
+font-size:18px;
+
+}
+
+.sidebar ul{
+
+list-style:none;
+
+}
+
+.sidebar li{
+
+padding:14px 16px;
+
+margin-bottom:6px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.sidebar li:hover{
+
+background:rgba(255,255,255,.12);
+
+}
+
+.cards{
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:22px;
+
+margin-top:20px;
+
+}
+
+.card{
+
+background:white;
+
+border-radius:var(--radius);
+
+padding:28px;
+
+box-shadow:var(--shadow);
+
+transition:.25s;
+
+}
+
+.card:hover{
+
+transform:translateY(-4px);
+
+}
+
+.card h3{
+
+font-size:18px;
+
+margin-bottom:18px;
+
+font-weight:600;
+
+color:var(--text-light);
+
+}
+
+.card h1{
+
+font-size:42px;
+
+font-weight:700;
+
+}
+
+.table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin-top:20px;
+
+}
+
+.table th{
+
+background:var(--primary);
+
+color:white;
+
+padding:14px;
+
+text-align:left;
+
+}
+
+.table td{
+
+padding:14px;
+
+border-bottom:1px solid var(--border);
+
+}
+
+.table tr:hover{
+
+background:#f8fafc;
+
+}
+
+@media(max-width:1200px){
+
+.cards{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+}
+
+@media(max-width:700px){
+
+.sidebar{
+
+display:none;
+
+}
+
+.cards{
+
+grid-template-columns:1fr;
+
+}
+
+.content{
+
+padding:15px;
+
+}
 
 }
 
