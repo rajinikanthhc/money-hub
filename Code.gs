@@ -65,3 +65,17 @@ function getDashboardData() {
   };
 
 }
+
+function getRecentTransactions() {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Transactions");
+
+  const data = sheet.getDataRange().getDisplayValues();
+
+  data.shift();
+
+  return data.reverse().slice(0,5);
+
+}

@@ -6,6 +6,10 @@ function loadDashboard(){
   .withSuccessHandler(showDashboard)
   .getDashboardData();
 
+  google.script.run
+  .withSuccessHandler(showRecentTransactions)
+  .getRecentTransactions();
+
 }
 
 function showDashboard(data){
@@ -21,6 +25,34 @@ function showDashboard(data){
 
   document.getElementById("saving").innerHTML =
       "₹" + data.savings.toLocaleString();
+
+}
+
+function showRecentTransactions(data){
+
+    let html="";
+
+    data.forEach(row=>{
+
+        html+=`
+
+        <tr>
+
+        <td>${row[0]}</td>
+
+        <td>${row[1]}</td>
+
+        <td>${row[2]}</td>
+
+        <td>₹${Number(row[4]).toLocaleString()}</td>
+
+        </tr>
+
+        `;
+
+    });
+
+    document.getElementById("recentTransactions").innerHTML=html;
 
 }
 
