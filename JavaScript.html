@@ -1,23 +1,16 @@
 <script>
 
-function showPage(page){
+function changePage(page,menu){
 
-    const pages=[
-        "dashboardPage",
-        "transactionsPage",
-        "categoriesPage",
-        "accountsPage",
-        "reportsPage",
-        "settingsPage"
-    ];
-
-    pages.forEach(function(id){
-
-        document.getElementById(id).style.display="none";
-
-    });
+    document.querySelectorAll(".content > div")
+        .forEach(div=>div.style.display="none");
 
     document.getElementById(page).style.display="block";
+
+    document.querySelectorAll(".menu")
+        .forEach(item=>item.classList.remove("active"));
+
+    menu.classList.add("active");
 
     switch(page){
 
@@ -26,37 +19,30 @@ function showPage(page){
             break;
 
         case "transactionsPage":
-            if(typeof loadTransactions==="function")
-                loadTransactions();
+            loadTransactions();
             break;
 
         case "categoriesPage":
-            if(typeof loadCategories==="function")
-                loadCategories();
             break;
 
         case "accountsPage":
-            if(typeof loadAccounts==="function")
-                loadAccounts();
             break;
 
         case "reportsPage":
-            if(typeof loadReports==="function")
-                loadReports();
             break;
 
         case "settingsPage":
-            if(typeof loadSettings==="function")
-                loadSettings();
             break;
 
     }
 
 }
 
-window.onload = function () {
+window.onload=function(){
 
-    showPage("dashboardPage");
+    changePage("dashboardPage",
+        document.querySelector(".menu.active"));
 
 }
+
 </script>

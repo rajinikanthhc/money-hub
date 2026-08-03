@@ -1,95 +1,39 @@
 <div class="sidebar">
 
-<h2>💰 Money Hub</h2>
+    <h2>💰 Money Hub</h2>
 
-<ul>
+    <ul>
 
-<li class="menu-item active"
-onclick="changeMenu(this);showPage('dashboardPage')"
+        <li class="menu active"
+            onclick="changePage('dashboardPage',this)">
+            🏠 Dashboard
+        </li>
 
-🏠 Dashboard
+        <li class="menu"
+            onclick="changePage('transactionsPage',this)">
+            💸 Transactions
+        </li>
 
-</li>
+        <li class="menu"
+            onclick="changePage('categoriesPage',this)">
+            📂 Categories
+        </li>
 
-<li class="menu-item"
-onclick="changeMenu(this);showPage('transactionsPage')"
+        <li class="menu"
+            onclick="changePage('accountsPage',this)">
+            🏦 Accounts
+        </li>
 
-💸 Transactions
+        <li class="menu"
+            onclick="changePage('reportsPage',this)">
+            📊 Reports
+        </li>
 
-</li>
+        <li class="menu"
+            onclick="changePage('settingsPage',this)">
+            ⚙ Settings
+        </li>
 
-<li class="menu-item"
-onclick="changeMenu(this);showPage('categoriesPage')">
-
-📂 Categories
-
-</li>
-
-<li class="menu-item"
-onclick="changeMenu(this);showPage('accountsPage')">
-
-🏦 Accounts
-
-</li>
-
-<li class="menu-item"
-onclick="changeMenu(this);showPage('reportsPage')">
-
-📊 Reports
-
-</li>
-
-<li class="menu-item"
-onclick="changeMenu(this);showPage('settingsPage')">
-
-⚙ Settings
-
-</li>
-
-</ul>
+    </ul>
 
 </div>
-
-<style>
-
-.menu-item{
-
-padding:14px 16px;
-
-margin-bottom:8px;
-
-border-radius:10px;
-
-cursor:pointer;
-
-transition:.25s;
-
-}
-
-.menu-item:hover{
-
-background:rgba(255,255,255,.15);
-
-}
-
-.active{
-
-background:rgba(255,255,255,.25);
-
-}
-
-</style>
-
-<script>
-
-function changeMenu(item){
-
-    document
-    .querySelectorAll(".menu-item")
-    .forEach(x=>x.classList.remove("active"));
-
-    item.classList.add("active");
-
-}
-
-</script>
