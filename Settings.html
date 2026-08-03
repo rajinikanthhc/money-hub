@@ -1,3 +1,75 @@
 <h2>Settings</h2>
 
-<p>Settings module coming next...</p>
+<br>
+
+<div class="card">
+
+<h3>General</h3>
+
+<table class="table">
+
+<tr>
+    <td>Currency</td>
+    <td>
+        <select id="currency">
+            <option selected>₹ INR</option>
+            <option>$ USD</option>
+            <option>€ EUR</option>
+        </select>
+    </td>
+</tr>
+
+<tr>
+    <td>Date Format</td>
+    <td>
+        <select id="dateFormat">
+            <option selected>dd-MMM-yyyy</option>
+            <option>dd/MM/yyyy</option>
+            <option>MM/dd/yyyy</option>
+        </select>
+    </td>
+</tr>
+
+<tr>
+    <td>Financial Year</td>
+    <td>
+        <select id="financialYear">
+            <option selected>Apr - Mar</option>
+            <option>Jan - Dec</option>
+        </select>
+    </td>
+</tr>
+
+</table>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<h3>Data Management</h3>
+
+<br>
+
+<button onclick="backupData()">📦 Backup Data</button>
+
+<button onclick="restoreData()">📂 Restore Data</button>
+
+<button onclick="archiveYear()">🗄 Archive Financial Year</button>
+
+<button onclick="clearTransactions()">🗑 Clear Transactions</button>
+
+</div>
+
+<br>
+
+<div class="card">
+
+<h3>About</h3>
+
+<p><b>Application</b> : Money Hub</p>
+<p><b>Version</b> : v2.0</p>
+<p><b>Developer</b> : Rajinikanth H C</p>
+
+</div>
