@@ -1,36 +1,55 @@
 <script>
 
 function initDashboard(){
-
-    console.log("Dashboard Initialized");
-
     loadDashboard();
-
 }
 
 function loadDashboard(){
 
-    console.log("Loading Dashboard Data");
-
     google.script.run
-        .withSuccessHandler(function(data){
-
-            console.log("Dashboard Data", data);
-
-            showDashboard(data);
-
-        })
+        .withSuccessHandler(showDashboard)
         .getDashboardData();
 
     google.script.run
-        .withSuccessHandler(function(data){
-
-            console.log("Recent Transactions", data);
-
-            showRecentTransactions(data);
-
-        })
+        .withSuccessHandler(showRecentTransactions)
         .getRecentTransactions();
+
+}
+
+function showDashboard(data){
+
+    document.getElementById("balance").innerHTML =
+        "₹" + Number(data.balance).toLocaleString();
+
+    document.getElementById("income").innerHTML =
+        "₹" + Number(data.income).toLocaleString();
+
+    document.getElementById("expense").innerHTML =
+        "₹" + Number(data.expense).toLocaleString();
+
+    document.getElementById("saving").innerHTML =
+        "₹" + Number(data.savings).toLocaleString();
+
+}
+
+function showRecentTransactions(data){
+
+    let html = "";
+
+    data.forEach(function(row){
+
+        html += `
+        <tr>
+            <td>${row[0]}</td>
+            <td>${row[1]}</td>
+            <td>${row[2]}</td>
+            <td>₹${Number(row[4]).toLocaleString()}</td>
+        </tr>
+        `;
+
+    });
+
+    document.getElementById("recentTransactions").innerHTML = html;
 
 }
 
