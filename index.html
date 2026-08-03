@@ -1,21 +1,39 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
   <base target="_top">
+
+  <?!= include('Theme'); ?>
   <?!= include('CSS'); ?>
+
 </head>
 
 <body>
 
-<h1>Money Hub</h1>
+<div class="app">
 
-<button onclick="loadTransactions()">
-  Load Transactions
-</button>
+  <?!= include('Sidebar'); ?>
 
-<table id="tbl"></table>
+  <div class="main">
 
+      <?!= include('Header'); ?>
+
+      <div class="content">
+
+          <?!= include('Dashboard'); ?>
+
+      </div>
+
+  </div>
+
+</div>
+
+<?!= include('Utils'); ?>
+<?!= include('DashboardJS'); ?>
 <?!= include('JavaScript'); ?>
 
 </body>
+
 </html>
