@@ -79,9 +79,15 @@ function searchTransactions(){
 
 }
 
+let editRow = 0;
+
 function openTransactionForm(){
 
+    editRow = 0;
+
     document.getElementById("transactionModal").style.display = "flex";
+
+    clearTransactionForm();
 
 }
 
@@ -133,9 +139,37 @@ function clearTransactionForm(){
 
 }
 
+function formatDateForInput(date){
+
+    const d = new Date(date);
+
+    const y = d.getFullYear();
+
+    const m = String(d.getMonth()+1).padStart(2,"0");
+
+    const day = String(d.getDate()).padStart(2,"0");
+
+    return `${y}-${m}-${day}`;
+
+}
+
 function editTransaction(row){
 
-    alert("Edit Transaction - Coming Next");
+    editRow = row;
+
+    const t = transactions[row];
+
+    document.getElementById("tDate").value =
+        formatDateForInput(t[1]);
+
+    document.getElementById("tType").value = t[2];
+    document.getElementById("tCategory").value = t[3];
+    document.getElementById("tAccount").value = t[4];
+    document.getElementById("tAmount").value = t[5];
+    document.getElementById("tPayment").value = t[6];
+    document.getElementById("tDescription").value = t[7];
+
+    document.getElementById("transactionModal").style.display = "flex";
 
 }
 
