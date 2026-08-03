@@ -4,28 +4,46 @@
 
 <ul>
 
-<li onclick="loadPage('Dashboard')" class="menu-item active">
+<li class="menu-item active"
+onclick="changeMenu(this);loadPage('Dashboard')">
+
 🏠 Dashboard
+
 </li>
 
-<li onclick="loadPage('Transactions')" class="menu-item">
+<li class="menu-item"
+onclick="changeMenu(this);loadPage('Transactions')">
+
 💸 Transactions
+
 </li>
 
-<li onclick="loadPage('Categories')" class="menu-item">
+<li class="menu-item"
+onclick="changeMenu(this);loadPage('Categories')">
+
 📂 Categories
+
 </li>
 
-<li onclick="loadPage('Accounts')" class="menu-item">
+<li class="menu-item"
+onclick="changeMenu(this);loadPage('Accounts')">
+
 🏦 Accounts
+
 </li>
 
-<li onclick="loadPage('Reports')" class="menu-item">
+<li class="menu-item"
+onclick="changeMenu(this);loadPage('Reports')">
+
 📊 Reports
+
 </li>
 
-<li onclick="loadPage('Settings')" class="menu-item">
+<li class="menu-item"
+onclick="changeMenu(this);loadPage('Settings')">
+
 ⚙ Settings
+
 </li>
 
 </ul>
@@ -33,30 +51,6 @@
 </div>
 
 <style>
-
-.sidebar{
-
-width:250px;
-
-background:linear-gradient(180deg,#1e3a8a,#1e40af);
-
-color:white;
-
-padding:25px 20px;
-
-}
-
-.sidebar h2{
-
-margin-bottom:35px;
-
-}
-
-.sidebar ul{
-
-list-style:none;
-
-}
 
 .menu-item{
 
@@ -85,3 +79,17 @@ background:rgba(255,255,255,.25);
 }
 
 </style>
+
+<script>
+
+function changeMenu(item){
+
+    document
+    .querySelectorAll(".menu-item")
+    .forEach(x=>x.classList.remove("active"));
+
+    item.classList.add("active");
+
+}
+
+</script>

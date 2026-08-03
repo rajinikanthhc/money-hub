@@ -2,28 +2,65 @@
 
 function loadPage(page){
 
-    const pages = {
+    google.script.run
+        .withSuccessHandler(function(html){
 
-        Dashboard : `<?!= include("Dashboard"); ?>`,
+            document.getElementById("pageContent").innerHTML = html;
 
-        Transactions : `<?!= include("Transactions"); ?>`,
+            initializePage(page);
 
-        Categories : `<?!= include("Categories"); ?>`,
+        })
+        .getPage(page);
 
-        Accounts : `<?!= include("Accounts"); ?>`,
+}
 
-        Reports : `<?!= include("Reports"); ?>`,
+function initializePage(page){
 
-        Settings : `<?!= include("Settings"); ?>`
+    switch(page){
 
-    };
+        case "Dashboard":
 
-    document.getElementById("pageContent").innerHTML = pages[page];
+            if(typeof initDashboard==="function")
+                initDashboard();
 
-    document.querySelectorAll(".menu-item")
-    .forEach(item=>item.classList.remove("active"));
+            break;
 
-    event.target.classList.add("active");
+        case "Transactions":
+
+            if(typeof initTransactions==="function")
+                initTransactions();
+
+            break;
+
+        case "Categories":
+
+            if(typeof initCategories==="function")
+                initCategories();
+
+            break;
+
+        case "Accounts":
+
+            if(typeof initAccounts==="function")
+                initAccounts();
+
+            break;
+
+        case "Reports":
+
+            if(typeof initReports==="function")
+                initReports();
+
+            break;
+
+        case "Settings":
+
+            if(typeof initSettings==="function")
+                initSettings();
+
+            break;
+
+    }
 
 }
 

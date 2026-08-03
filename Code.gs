@@ -79,3 +79,11 @@ function getRecentTransactions() {
   return data.reverse().slice(0,5);
 
 }
+
+function getPage(page) {
+
+  return HtmlService
+    .createHtmlOutputFromFile(page)
+    .getContent();
+
+}
