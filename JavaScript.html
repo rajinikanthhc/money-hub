@@ -1,42 +1,36 @@
 <script>
 
-function loadTransactions(){
+function loadTransactions() {
 
-    google.script.run
+  google.script.run
     .withSuccessHandler(showData)
+    .withFailureHandler(function(err){
+      alert(err.message);
+      console.log(err);
+    })
     .getTransactions();
 
 }
 
-function showData(data){
+function showData(data) {
 
-    let html="";
+  let html = "<tr>";
 
-    html+="<tr>";
+  data[0].forEach(h => html += `<th>${h}</th>`);
 
-    data[0].forEach(h=>{
-        html+=`<th>${h}</th>`;
-    });
+  html += "</tr>";
 
-    html+="</tr>";
+  for (let i = 1; i < data.length; i++) {
 
-    for(let i=1;i<data.length;i++){
+    html += "<tr>";
 
-        html+="<tr>";
+    data[i].forEach(col => html += `<td>${col}</td>`);
 
-        data[i].forEach(col=>{
+    html += "</tr>";
+  }
 
-            html+=`<td>${col}</td>`;
-
-        });
-
-        html+="</tr>";
-    }
-
-    document.getElementById("tbl").innerHTML=html;
+  document.getElementById("tbl").innerHTML = html;
 
 }
-
-window.onload=loadTransactions;
 
 </script>

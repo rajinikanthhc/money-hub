@@ -8,9 +8,8 @@ function include(filename) {
 }
 
 function getTransactions() {
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
-
-  return sheet.getDataRange().getValues();
+  return [
+    ["Date","Type","Category","Account","Amount","Payment Mode","Description"],
+    ["03-Aug-2026","Expense","Grocery","SBI",850,"UPI","D-Mart"]
+  ];
 }
