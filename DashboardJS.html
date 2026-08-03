@@ -1,55 +1,51 @@
 <script>
 
-function initDashboard(){
-    loadDashboard();
-}
+function loadDashboard() {
 
-function loadDashboard(){
+  google.script.run
+    .withSuccessHandler(showDashboard)
+    .getDashboardData();
 
-    google.script.run
-        .withSuccessHandler(showDashboard)
-        .getDashboardData();
-
-    google.script.run
-        .withSuccessHandler(showRecentTransactions)
-        .getRecentTransactions();
+  google.script.run
+    .withSuccessHandler(showRecentTransactions)
+    .getRecentTransactions();
 
 }
 
-function showDashboard(data){
+function showDashboard(data) {
 
-    document.getElementById("balance").innerHTML =
-        "₹" + Number(data.balance).toLocaleString();
+  document.getElementById("balance").innerHTML =
+    "₹" + Number(data.balance).toLocaleString("en-IN");
 
-    document.getElementById("income").innerHTML =
-        "₹" + Number(data.income).toLocaleString();
+  document.getElementById("income").innerHTML =
+    "₹" + Number(data.income).toLocaleString("en-IN");
 
-    document.getElementById("expense").innerHTML =
-        "₹" + Number(data.expense).toLocaleString();
+  document.getElementById("expense").innerHTML =
+    "₹" + Number(data.expense).toLocaleString("en-IN");
 
-    document.getElementById("saving").innerHTML =
-        "₹" + Number(data.savings).toLocaleString();
+  document.getElementById("saving").innerHTML =
+    "₹" + Number(data.savings).toLocaleString("en-IN");
 
 }
 
-function showRecentTransactions(data){
+function showRecentTransactions(data) {
 
-    let html = "";
+  let html = "";
 
-    data.forEach(function(row){
+  for (let i = data.length - 1; i >= 1; i--) {
 
-        html += `
-        <tr>
-            <td>${row[0]}</td>
-            <td>${row[1]}</td>
-            <td>${row[2]}</td>
-            <td>₹${Number(row[5]).toLocaleString()}</td>
-        </tr>
-        `;
+    html += `
+      <tr>
+        <td>${data[i][1]}</td>
+        <td>${data[i][2]}</td>
+        <td>${data[i][3]}</td>
+        <td>₹${Number(data[i][5]).toLocaleString("en-IN")}</td>
+      </tr>
+    `;
 
-    });
+  }
 
-    document.getElementById("recentTransactions").innerHTML = html;
+  document.getElementById("recentTransactions").innerHTML = html;
 
 }
 
