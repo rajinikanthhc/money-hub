@@ -22,7 +22,8 @@ onkeyup="searchTransactions()">
 <th>Date</th>
 <th>Type</th>
 <th>Category</th>
-<th>Account</th>
+<th>From Account</th>
+<th>To Account</th>
 <th>Amount</th>
 <th>Payment</th>
 <th>Description</th>
@@ -50,22 +51,56 @@ onkeyup="searchTransactions()">
 <input type="date" id="tDate">
 
 <label>Type</label>
-<select id="tType" onchange="loadCategoryDropdown(this.value)">
-<option value="Income">Income</option>
-<option value="Expense">Expense</option>
+
+<select id="tType" onchange="changeTransactionType()">
+
+    <option value="Income">Income</option>
+    <option value="Expense">Expense</option>
+    <option value="Transfer">Transfer</option>
+
 </select>
 
+<div id="categoryDiv">
+
 <label>Category</label>
+
 <select id="tCategory"></select>
 
-<label>Account</label>
-<select id="tAccount"></select>
+</div>
+
+<div id="fromAccountDiv">
+
+<label>From Account</label>
+
+<select id="tFromAccount"></select>
+
+</div>
+
+<div id="toAccountDiv" style="display:none;">
+
+<label>To Account</label>
+
+<select id="tToAccount"></select>
+
+</div>
 
 <label>Amount</label>
 <input type="number" id="tAmount">
 
+<div id="paymentDiv">
+
 <label>Payment Mode</label>
+
 <select id="tPayment">
+
+<option>Cash</option>
+<option>UPI</option>
+<option>Bank Transfer</option>
+<option>Credit Card</option>
+
+</select>
+
+</div>
 
 <option>Cash</option>
 <option>UPI</option>

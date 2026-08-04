@@ -29,9 +29,10 @@ function showTransactions(data){
             <td>${data[i][2]}</td>
             <td>${data[i][3]}</td>
             <td>${data[i][4]}</td>
-            <td>₹${Number(data[i][5]).toLocaleString("en-IN")}</td>
-            <td>${data[i][6]}</td>
-            <td>${data[i][7]}</td>
+<td>${data[i][5]}</td>
+<td>₹${Number(data[i][6]).toLocaleString("en-IN")}</td>
+<td>${data[i][7]}</td>
+<td>${data[i][8]}</td>
 
             <td>
 
@@ -104,15 +105,16 @@ function saveTransaction(){
 
     const data = {
 
-        date: document.getElementById("tDate").value,
-        type: document.getElementById("tType").value,
-        category: document.getElementById("tCategory").value,
-        account: document.getElementById("tAccount").value,
-        amount: document.getElementById("tAmount").value,
-        payment: document.getElementById("tPayment").value,
-        description: document.getElementById("tDescription").value
+    date: document.getElementById("tDate").value,
+    type: document.getElementById("tType").value,
+    category: document.getElementById("tCategory").value,
+    fromAccount: document.getElementById("tFromAccount").value,
+    toAccount: document.getElementById("tToAccount").value,
+    amount: document.getElementById("tAmount").value,
+    payment: document.getElementById("tPayment").value,
+    description: document.getElementById("tDescription").value
 
-    };
+};
 
     const runner = google.script.run
     .withSuccessHandler(function(){
@@ -148,7 +150,8 @@ function clearTransactionForm(){
     document.getElementById("tDate").value="";
     document.getElementById("tType").value="Income";
     document.getElementById("tCategory").value="";
-    document.getElementById("tAccount").value="";
+    document.getElementById("tFromAccount").value="";
+document.getElementById("tToAccount").value="";
     document.getElementById("tAmount").value="";
     document.getElementById("tPayment").value="";
     document.getElementById("tDescription").value="";
@@ -201,11 +204,13 @@ function editTransaction(row){
         formatDateForInput(t[1]);
 
     document.getElementById("tType").value = t[2];
-    loadAccountDropdown(t[4]);
-    document.getElementById("tAccount").value = t[4];
-    document.getElementById("tAmount").value = t[5];
-    document.getElementById("tPayment").value = t[6];
-    document.getElementById("tDescription").value = t[7];
+    loadAccountDropdown();
+
+document.getElementById("tFromAccount").value = t[4];
+document.getElementById("tToAccount").value = t[5];
+document.getElementById("tAmount").value = t[6];
+document.getElementById("tPayment").value = t[7];
+document.getElementById("tDescription").value = t[8];
 
     document.getElementById("transactionModal").style.display = "flex";
 
@@ -243,10 +248,51 @@ function loadAccountDropdown(selected = "") {
 
             });
 
-            document.getElementById("tAccount").innerHTML = html;
+            document.getElementById("tFromAccount").innerHTML = html;
+document.getElementById("tToAccount").innerHTML = html;
 
         })
         .getAllAccountNames();
+
+}
+
+function changeTransactionType(){
+
+    const type = document.getElementById("tType").value;
+
+    if(type=="Expense"){
+
+        document.getElementById("categoryDiv").style.display="block";
+        document.getElementById("paymentDiv").style.display="block";
+
+        document.getElementById("fromAccountDiv").style.display="block";
+        document.getElementById("toAccountDiv").style.display="none";
+
+        loadCategoryDropdown("Expense");
+
+    }
+
+    else if(type=="Income"){
+
+        document.getElementById("categoryDiv").style.display="block";
+        document.getElementById("paymentDiv").style.display="block";
+
+        document.getElementById("fromAccountDiv").style.display="none";
+        document.getElementById("toAccountDiv").style.display="block";
+
+        loadCategoryDropdown("Income");
+
+    }
+
+    else{
+
+        document.getElementById("categoryDiv").style.display="none";
+        document.getElementById("paymentDiv").style.display="none";
+
+        document.getElementById("fromAccountDiv").style.display="block";
+        document.getElementById("toAccountDiv").style.display="block";
+
+    }
 
 }
 

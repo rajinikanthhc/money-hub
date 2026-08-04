@@ -49,7 +49,7 @@ function getDashboardData() {
   for (let i = 1; i < transData.length; i++) {
 
     const type = transData[i][2];
-    const amount = Number(transData[i][5]);
+    const amount = Number(transData[i][6]);
 
     if (type === "Income") {
       income += amount;
@@ -120,17 +120,18 @@ function saveTransaction(data) {
   sheet.appendRow([
     id,
     Utilities.formatDate(
-    new Date(data.date),
-    Session.getScriptTimeZone(),
-    "dd-MMM-yyyy"
-),
+        new Date(data.date),
+        Session.getScriptTimeZone(),
+        "dd-MMM-yyyy"
+    ),
     data.type,
     data.category,
-    data.account,
+    data.fromAccount,
+    data.toAccount,
     data.amount,
     data.payment,
     data.description
-  ]);
+]);
 
   return true;
 
