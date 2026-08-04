@@ -12,6 +12,10 @@ function showMonthlyBudget(data){
 
     let html = "";
 
+    let totalBudget = 0;
+    let totalActual = 0;
+    let totalRemaining = 0;
+
     data.forEach(function(row){
 
         let status = "🟢";
@@ -25,6 +29,10 @@ function showMonthlyBudget(data){
             status = "🟡";
 
         }
+
+        totalBudget += Number(row.budget);
+        totalActual += Number(row.actual);
+        totalRemaining += Number(row.remaining);
 
         html += `
         <tr>
@@ -43,6 +51,31 @@ function showMonthlyBudget(data){
         `;
 
     });
+
+    html += `
+    <tr style="background:#f5f7ff;font-weight:bold;">
+
+        <td>Total</td>
+
+        <td>₹${totalBudget.toLocaleString("en-IN")}</td>
+
+        <td>₹${totalActual.toLocaleString("en-IN")}</td>
+
+        <td>₹${totalRemaining.toLocaleString("en-IN")}</td>
+
+        <td></td>
+
+    </tr>
+    `;
+
+    document.getElementById("mbTotalBudget").innerHTML =
+        "₹" + totalBudget.toLocaleString("en-IN");
+
+    document.getElementById("mbTotalActual").innerHTML =
+        "₹" + totalActual.toLocaleString("en-IN");
+
+    document.getElementById("mbTotalRemaining").innerHTML =
+        "₹" + totalRemaining.toLocaleString("en-IN");
 
     document.getElementById("budgetTable").innerHTML = html;
 

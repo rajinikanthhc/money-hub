@@ -20,39 +20,53 @@ function showAccounts(data){
 
     let html = "";
 
+    let totalCurrentBalance = 0;
+
     for(let i=0;i<data.length;i++){
 
-html += `
+        totalCurrentBalance += Number(data[i][4]);
 
-<tr>
+        html += `
 
-<td>${data[i][0]}</td>
+        <tr>
 
-<td>${data[i][1]}</td>
+            <td>${data[i][0]}</td>
 
-<td>${data[i][2]}</td>
+            <td>${data[i][1]}</td>
 
-<td>₹${Number(data[i][3]).toLocaleString("en-IN")}</td>
+            <td>${data[i][2]}</td>
 
-<td>
-₹${Number(data[i][4]).toLocaleString("en-IN")}
-</td>
+            <td>₹${Number(data[i][3]).toLocaleString("en-IN",{
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            })}</td>
 
-<td>
+            <td>₹${Number(data[i][4]).toLocaleString("en-IN",{
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            })}</td>
 
-<button onclick="editAccount(${i})">✏️</button>
+            <td>
 
-<button onclick="deleteAccount(${i})">🗑️</button>
+                <button onclick="editAccount(${i})">✏️</button>
 
-</td>
+                <button onclick="deleteAccount(${i})">🗑️</button>
 
-</tr>
+            </td>
 
-`;
+        </tr>
+
+        `;
 
     }
 
     document.getElementById("accountTable").innerHTML = html;
+
+    document.getElementById("totalCurrentBalance").innerHTML =
+        "₹" + totalCurrentBalance.toLocaleString("en-IN",{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
 
 }
 

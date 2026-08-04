@@ -7,6 +7,20 @@ function changePage(page,menu){
 
     document.getElementById(page).style.display="block";
 
+    const titles = {
+
+    dashboardPage: "Dashboard",
+    transactionsPage: "Transactions",
+    categoriesPage: "Categories",
+    accountsPage: "Accounts",
+    budgetPage: "Monthly Budget",
+    reportsPage: "Reports",
+    settingsPage: "Settings"
+
+};
+
+document.getElementById("pageTitle").innerHTML = titles[page];
+
     document.querySelectorAll(".menu")
         .forEach(item=>item.classList.remove("active"));
 
