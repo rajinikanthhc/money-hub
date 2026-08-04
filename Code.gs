@@ -253,11 +253,55 @@ function getCategoriesByType(type) {
 
 function getAllAccounts() {
 
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Accounts");
+  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
 
-  return sheet.getDataRange().getDisplayValues();
+  const accountSheet = ss.getSheetByName("Accounts");
+  const transSheet = ss.getSheetByName("Transactions");
+
+  const accounts = accountSheet.getDataRange().getDisplayValues();
+  const transactions = transSheet.getDataRange().getDisplayValues();
+
+  let result = [];
+
+  for (let i = 1; i < accounts.length; i++) {
+
+    let currentBalance = Number(accounts[i][3]) || 0;
+
+    const accountName = accounts[i][1];
+
+    for (let j = 1; j < transactions.length; j++) {
+
+      if (transactions[j][4] == accountName) {
+
+        const amount = Number(transactions[j][5]);
+
+        if (transactions[j][2] == "Income") {
+
+          currentBalance += amount;
+
+        } else if (transactions[j][2] == "Expense") {
+
+          currentBalance -= amount;
+
+        }
+
+      }
+
+    }
+
+    result.push([
+
+      accounts[i][0],        // ID
+      accountName,           // Account
+      accounts[i][2],        // Type
+      accounts[i][3],        // Opening Balance
+      currentBalance         // Current Balance
+
+    ]);
+
+  }
+
+  return result;
 
 }
 

@@ -20,30 +20,35 @@ function showAccounts(data){
 
     let html = "";
 
-    for(let i=1;i<data.length;i++){
+    for(let i=0;i<data.length;i++){
 
-        html += `
-        <tr>
+html += `
 
-            <td>${data[i][0]}</td>
-            <td>${data[i][1]}</td>
-            <td>${data[i][2]}</td>
-            <td>₹${Number(data[i][3]).toLocaleString("en-IN")}</td>
+<tr>
 
-            <td>
+<td>${data[i][0]}</td>
 
-                <button onclick="editAccount(${i})">
-                    ✏️
-                </button>
+<td>${data[i][1]}</td>
 
-                <button onclick="deleteAccount(${i})">
-                    🗑️
-                </button>
+<td>${data[i][2]}</td>
 
-            </td>
+<td>₹${Number(data[i][3]).toLocaleString("en-IN")}</td>
 
-        </tr>
-        `;
+<td>
+₹${Number(data[i][4]).toLocaleString("en-IN")}
+</td>
+
+<td>
+
+<button onclick="editAccount(${i})">✏️</button>
+
+<button onclick="deleteAccount(${i})">🗑️</button>
+
+</td>
+
+</tr>
+
+`;
 
     }
 
