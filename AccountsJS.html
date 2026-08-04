@@ -36,15 +36,9 @@ function showAccounts(data){
 
             <td>${data[i][2]}</td>
 
-            <td>₹${Number(data[i][3]).toLocaleString("en-IN",{
-                minimumFractionDigits:2,
-                maximumFractionDigits:2
-            })}</td>
+            <td>₹${Math.round(Number(data[i][3])).toLocaleString("en-IN")}</td>
 
-            <td>₹${Number(data[i][4]).toLocaleString("en-IN",{
-                minimumFractionDigits:2,
-                maximumFractionDigits:2
-            })}</td>
+            <td>₹${Math.round(Number(data[i][4])).toLocaleString("en-IN")}</td>
 
             <td>
 
@@ -63,10 +57,7 @@ function showAccounts(data){
     document.getElementById("accountTable").innerHTML = html;
 
     document.getElementById("totalCurrentBalance").innerHTML =
-        "₹" + totalCurrentBalance.toLocaleString("en-IN",{
-            minimumFractionDigits:2,
-            maximumFractionDigits:2
-        });
+        "₹" + Math.round(totalCurrentBalance).toLocaleString("en-IN");
 
 }
 

@@ -143,7 +143,7 @@ function updateTransaction(data) {
     .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
     .getSheetByName("Transactions");
 
-  sheet.getRange(data.row + 1, 2, 1, 7).setValues([[
+  sheet.getRange(data.row + 1, 2, 1, 8).setValues([[
     Utilities.formatDate(
       new Date(data.date),
       Session.getScriptTimeZone(),
@@ -151,7 +151,8 @@ function updateTransaction(data) {
     ),
     data.type,
     data.category,
-    data.account,
+    data.fromAccount,
+    data.toAccount,
     data.amount,
     data.payment,
     data.description
@@ -272,17 +273,34 @@ function getAllAccounts() {
 
     for (let j = 1; j < transactions.length; j++) {
 
-      if (transactions[j][4] == accountName) {
+      const type = transactions[j][2];
+      const fromAccount = transactions[j][4];
+      const toAccount = transactions[j][5];
+      const amount = Number(transactions[j][6]) || 0;
 
-        const amount = Number(transactions[j][5]);
+      if (type == "Income" && toAccount == accountName) {
 
-        if (transactions[j][2] == "Income") {
+        currentBalance += amount;
 
-          currentBalance += amount;
+      }
 
-        } else if (transactions[j][2] == "Expense") {
+      else if (type == "Expense" && fromAccount == accountName) {
+
+        currentBalance -= amount;
+
+      }
+
+      else if (type == "Transfer") {
+
+        if (fromAccount == accountName) {
 
           currentBalance -= amount;
+
+        }
+
+        if (toAccount == accountName) {
+
+          currentBalance += amount;
 
         }
 
@@ -292,11 +310,11 @@ function getAllAccounts() {
 
     result.push([
 
-      accounts[i][0],        // ID
-      accountName,           // Account
-      accounts[i][2],        // Type
-      accounts[i][3],        // Opening Balance
-      currentBalance         // Current Balance
+      accounts[i][0],      // ID
+      accountName,
+      accounts[i][2],      // Type
+      accounts[i][3],      // Opening Balance
+      currentBalance       // Current Balance
 
     ]);
 
@@ -406,7 +424,7 @@ function getMonthlyBudget() {
     for (let j = 1; j < transactions.length; j++) {
 
       const category = transactions[j][3];
-      const amount = Number(transactions[j][5]);
+      const amount = Number(transactions[j][6]);
 
       if (categoryMap[category] == group) {
 
@@ -458,7 +476,7 @@ function getReportData() {
 
     const type = transactions[i][2];
     const category = transactions[i][3];
-    const amount = Number(transactions[i][5]);
+    const amount = Number(transactions[i][6]);
 
     if (type == "Income") {
 
