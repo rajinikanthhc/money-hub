@@ -19,7 +19,15 @@ function getTransactions() {
       throw new Error("Sheet 'Transactions' not found.");
     }
 
-    return sheet.getDataRange().getDisplayValues();
+    const data = sheet.getDataRange().getDisplayValues();
+
+const header = data.shift();
+
+data.sort((a, b) => Number(b[0]) - Number(a[0])); // Sort by ID descending
+
+data.unshift(header);
+
+return data;
 
   } catch (e) {
 
@@ -105,7 +113,29 @@ function getAllTransactions() {
     .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
     .getSheetByName("Transactions");
 
-  return sheet.getDataRange().getDisplayValues();
+  const data = sheet.getDataRange().getDisplayValues();
+
+  const header = data.shift();
+
+  data.sort(function(a, b) {
+
+    // Convert dd-MMM-yyyy to Date
+    const dateA = new Date(a[1]);
+    const dateB = new Date(b[1]);
+
+    // Newest date first
+    if (dateB.getTime() !== dateA.getTime()) {
+      return dateB - dateA;
+    }
+
+    // Same date -> highest ID first
+    return Number(b[0]) - Number(a[0]);
+
+  });
+
+  data.unshift(header);
+
+  return data;
 
 }
 
@@ -115,35 +145,25 @@ function saveTransaction(data) {
     .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
     .getSheetByName("Transactions");
 
-  const id = sheet.getLastRow();
+  // Get highest existing ID
+  const ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+
+  let maxId = 0;
+
+  ids.forEach(function(row){
+
+    const id = Number(row[0]);
+
+    if(id > maxId){
+      maxId = id;
+    }
+
+  });
+
+  const newId = maxId + 1;
 
   sheet.appendRow([
-    id,
-    Utilities.formatDate(
-        new Date(data.date),
-        Session.getScriptTimeZone(),
-        "dd-MMM-yyyy"
-    ),
-    data.type,
-    data.category,
-    data.fromAccount,
-    data.toAccount,
-    data.amount,
-    data.payment,
-    data.description
-]);
-
-  return true;
-
-}
-
-function updateTransaction(data) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
-
-  sheet.getRange(data.row + 1, 2, 1, 8).setValues([[
+    newId,
     Utilities.formatDate(
       new Date(data.date),
       Session.getScriptTimeZone(),
@@ -153,24 +173,70 @@ function updateTransaction(data) {
     data.category,
     data.fromAccount,
     data.toAccount,
-    data.amount,
+    Number(data.amount),
     data.payment,
     data.description
-  ]]);
+  ]);
 
   return true;
 
 }
 
-function deleteTransaction(row){
+function updateTransaction(data){
 
   const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
+      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+      .getSheetByName("Transactions");
 
-  sheet.deleteRow(row + 1);
+  const values = sheet.getDataRange().getValues();
 
-  return true;
+  for(let i=1;i<values.length;i++){
+
+      if(Number(values[i][0]) == Number(data.id)){
+
+          sheet.getRange(i+1,2).setValue(
+              Utilities.formatDate(
+                  new Date(data.date),
+                  Session.getScriptTimeZone(),
+                  "dd-MMM-yyyy"
+              )
+          );
+
+          sheet.getRange(i+1,3).setValue(data.type);
+          sheet.getRange(i+1,4).setValue(data.category);
+          sheet.getRange(i+1,5).setValue(data.fromAccount);
+          sheet.getRange(i+1,6).setValue(data.toAccount);
+          sheet.getRange(i+1,7).setValue(Number(data.amount));
+          sheet.getRange(i+1,8).setValue(data.payment);
+          sheet.getRange(i+1,9).setValue(data.description);
+
+          break;
+
+      }
+
+  }
+
+}
+
+function deleteTransaction(id){
+
+  const sheet = SpreadsheetApp
+      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+      .getSheetByName("Transactions");
+
+  const values = sheet.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+      if(Number(values[i][0]) == Number(id)){
+
+          sheet.deleteRow(i+1);
+
+          break;
+
+      }
+
+  }
 
 }
 
@@ -480,23 +546,24 @@ function getReportData() {
 
     if (type == "Income") {
 
-      income += amount;
+    income += amount;
 
-    } else {
+}
+else if (type == "Expense") {
 
-      expense += amount;
+    expense += amount;
 
-      // Category Summary
-      categorySummary[category] =
+    // Category Summary
+    categorySummary[category] =
         (categorySummary[category] || 0) + amount;
 
-      // Budget Group Summary
-      const group = categoryMap[category] || "Others";
+    // Budget Group Summary
+    const group = categoryMap[category] || "Others";
 
-      budgetSummary[group] =
+    budgetSummary[group] =
         (budgetSummary[group] || 0) + amount;
-    }
 
+}
   }
 
   return {
@@ -585,5 +652,107 @@ function drawIncomeExpenseChart(data){
         }
 
     );
+
+}
+
+function saveTransfer(data) {
+
+  const sheet = SpreadsheetApp
+    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+    .getSheetByName("Transactions");
+
+  // Get highest existing ID
+  const ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+
+  let maxId = 0;
+
+  ids.forEach(function(row){
+
+    const id = Number(row[0]);
+
+    if(id > maxId){
+      maxId = id;
+    }
+
+  });
+
+  const newId = maxId + 1;
+
+  sheet.appendRow([
+
+    newId,
+
+    Utilities.formatDate(
+      new Date(data.date),
+      Session.getScriptTimeZone(),
+      "dd-MMM-yyyy"
+    ),
+
+    "Transfer",      // Type
+
+    "",              // Category
+
+    data.fromAccount,
+
+    data.toAccount,
+
+    Number(data.amount),
+
+    "",              // Payment Mode
+
+    data.description
+
+  ]);
+
+  return true;
+
+}
+
+function updateTransfer(data){
+
+  const sheet = SpreadsheetApp
+      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+      .getSheetByName("Transactions");
+
+  const values = sheet.getDataRange().getValues();
+
+  for(let i=1;i<values.length;i++){
+
+      if(Number(values[i][0]) == Number(data.id)){
+
+          sheet.getRange(i+1,2).setValue(
+              Utilities.formatDate(
+                  new Date(data.date),
+                  Session.getScriptTimeZone(),
+                  "dd-MMM-yyyy"
+              )
+          );
+
+          sheet.getRange(i+1,5).setValue(data.fromAccount);
+          sheet.getRange(i+1,6).setValue(data.toAccount);
+          sheet.getRange(i+1,7).setValue(Number(data.amount));
+          sheet.getRange(i+1,9).setValue(data.description);
+
+          break;
+
+      }
+
+  }
+
+}
+
+function updateTransfer(data){
+
+  const sheet = SpreadsheetApp
+      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
+      .getSheetByName("Transactions");
+
+  const row = data.row + 1;
+
+  sheet.getRange(row,2).setValue(data.date);
+  sheet.getRange(row,5).setValue(data.fromAccount);
+  sheet.getRange(row,6).setValue(data.toAccount);
+  sheet.getRange(row,7).setValue(data.amount);
+  sheet.getRange(row,9).setValue(data.description);
 
 }
