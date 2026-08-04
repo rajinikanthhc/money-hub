@@ -220,27 +220,23 @@ function editTransaction(id){
     editRow = id;
 
     // Transfer
-    if(t[2] == "Transfer"){
+if(t[2] == "Transfer"){
 
-        loadTransferAccounts();
+    editRow = id;
 
-        document.getElementById("trDate").value =
-            formatDateForInput(t[1]);
+    loadTransferAccounts(t[4], t[5]);
 
-        document.getElementById("trAmount").value = t[6];
-        document.getElementById("trDescription").value = t[8];
+    document.getElementById("trDate").value =
+        formatDateForInput(t[1]);
 
-        setTimeout(function(){
+    document.getElementById("trAmount").value = t[6];
 
-            document.getElementById("trFromAccount").value = t[4];
-            document.getElementById("trToAccount").value = t[5];
+    document.getElementById("trDescription").value = t[8];
 
-        },300);
+    document.getElementById("transferModal").style.display = "flex";
 
-        document.getElementById("transferModal").style.display = "flex";
-
-        return;
-    }
+    return;
+}
 
     // Income / Expense
 
@@ -361,24 +357,38 @@ function closeTransferForm(){
 
 }
 
-function loadTransferAccounts(){
+function loadTransferAccounts(fromSelected="", toSelected=""){
 
     google.script.run
         .withSuccessHandler(function(list){
 
-            let html = "";
+            let fromHtml = "";
+            let toHtml = "";
 
             list.forEach(function(account){
 
-                html += `<option value="${account}">${account}</option>`;
+                fromHtml += `<option value="${account}" ${
+                    account == fromSelected ? "selected" : ""
+                }>${account}</option>`;
+
+                toHtml += `<option value="${account}" ${
+                    account == toSelected ? "selected" : ""
+                }>${account}</option>`;
 
             });
 
-            document.getElementById("trFromAccount").innerHTML = html;
-            document.getElementById("trToAccount").innerHTML = html;
+            document.getElementById("trFromAccount").innerHTML = fromHtml;
+            document.getElementById("trToAccount").innerHTML = toHtml;
 
-            if(list.length > 1){
-                document.getElementById("trToAccount").selectedIndex = 1;
+            // Only for NEW transfer
+            if(fromSelected == "" && toSelected == ""){
+
+                document.getElementById("trFromAccount").selectedIndex = 0;
+
+                if(list.length > 1){
+                    document.getElementById("trToAccount").selectedIndex = 1;
+                }
+
             }
 
         })
