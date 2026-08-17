@@ -1,71 +1,881 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
   <base target="_top">
-  <script src="https://www.gstatic.com/charts/loader.js"></script>
 
-  <?!= include('Theme'); ?>
-  <?!= include('CSS'); ?>
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  <title>Money Hub</title>
+
+  <?!= include("CSS"); ?>
 
 </head>
+
 
 <body>
 
 <div class="app">
 
-  <?!= include('Sidebar'); ?>
 
-  <div class="main">
+  <!-- =====================================
+       HEADER
+  ====================================== -->
 
-      <?!= include('Header'); ?>
+  <header class="topbar">
 
-      <div class="content">
+    <div class="brand">
 
-    <div id="dashboardPage">
-        <?!= include('Dashboard'); ?>
+      <span class="brandIcon">💰</span>
+
+      <span>Money Hub</span>
+
     </div>
 
-    <div id="transactionsPage" style="display:none;">
-        <?!= include('Transactions'); ?>
+
+    <div class="headerActions">
+
+      <button
+        class="primaryButton"
+        onclick="openTransactionModal()">
+
+        + Add Transaction
+
+      </button>
+
+
+      <button
+        class="navButton"
+        onclick="showPage('transactions')">
+
+        💳 Transactions
+
+      </button>
+
+
+      <button
+        class="navButton"
+        onclick="showPage('accounts')">
+
+        🏦 Accounts
+
+      </button>
+
+
+      <button
+        class="navButton"
+        onclick="showPage('categories')">
+
+        📁 Categories
+
+      </button>
+
+
+      <button
+        class="navButton"
+        onclick="showPage('budget')">
+
+        🧮 Budget
+
+      </button>
+
     </div>
 
-    <div id="categoriesPage" style="display:none;">
-        <?!= include('Categories'); ?>
+  </header>
+
+
+
+  <!-- =====================================
+       MAIN
+  ====================================== -->
+
+  <main>
+
+
+    <!-- =====================================
+         TRANSACTIONS PAGE
+    ====================================== -->
+
+    <section
+      id="transactionsPage"
+      class="page">
+
+
+      <div class="pageHeader">
+
+        <h1>Transactions</h1>
+
+
+        <div class="searchWrapper">
+
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search transactions..."
+            oninput="filterTransactions()">
+
+
+          <button
+            id="clearSearch"
+            onclick="clearSearch()">
+
+            ×
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="tableContainer">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>ID</th>
+
+              <th>Date</th>
+
+              <th>Type</th>
+
+              <th>Category</th>
+
+              <th>From Account</th>
+
+              <th>To Account</th>
+
+              <th>Amount</th>
+
+              <th>Description</th>
+
+              <th>Action</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="transactionsBody">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================
+         ACCOUNTS PAGE
+    ====================================== -->
+
+    <section
+      id="accountsPage"
+      class="page hidden">
+
+
+      <div class="pageHeader">
+
+        <h1>Accounts</h1>
+
+
+        <button
+          class="primaryButton"
+          onclick="openAccountModal()">
+
+          + Add Account
+
+        </button>
+
+      </div>
+
+
+
+      <div class="tableContainer">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>ID</th>
+
+              <th>Account</th>
+
+              <th>Type</th>
+
+              <th>Opening Balance</th>
+
+              <th>Action</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="accountsBody">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================
+         CATEGORIES PAGE
+    ====================================== -->
+
+    <section
+      id="categoriesPage"
+      class="page hidden">
+
+
+      <div class="pageHeader">
+
+        <h1>Categories</h1>
+
+
+        <button
+          class="primaryButton"
+          onclick="openCategoryModal()">
+
+          + Add Category
+
+        </button>
+
+      </div>
+
+
+
+      <div class="tableContainer">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>ID</th>
+
+              <th>Category</th>
+
+              <th>Type</th>
+
+              <th>Budget Group</th>
+
+              <th>Action</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="categoriesBody">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================
+         BUDGET PAGE
+    ====================================== -->
+
+    <section
+      id="budgetPage"
+      class="page hidden">
+
+
+      <div class="pageHeader">
+
+        <h1>Monthly Budget</h1>
+
+
+        <button
+          class="primaryButton"
+          onclick="openBudgetModal()">
+
+          + Add Budget
+
+        </button>
+
+      </div>
+
+
+
+      <div class="tableContainer">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>ID</th>
+
+              <th>Category</th>
+
+              <th>Monthly Budget</th>
+
+              <th>Remarks</th>
+
+              <th>Action</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="budgetBody">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+    </section>
+
+
+  </main>
+
+
+
+  <!-- =====================================
+       TRANSACTION MODAL
+  ====================================== -->
+
+  <div
+    id="transactionModal"
+    class="modalOverlay hidden">
+
+
+    <div class="modal">
+
+
+      <div class="modalHeader">
+
+        <h2 id="modalTitle">
+
+          Add Transaction
+
+        </h2>
+
+
+        <button
+          class="closeButton"
+          onclick="closeTransactionModal()">
+
+          ×
+
+        </button>
+
+      </div>
+
+
+
+      <div class="modalBody">
+
+
+        <input
+          type="hidden"
+          id="transactionId">
+
+
+
+        <div class="formGrid">
+
+
+          <div class="formGroup">
+
+            <label>Date</label>
+
+            <input
+              type="date"
+              id="transactionDate">
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Type</label>
+
+            <select
+              id="transactionType"
+              onchange="transactionTypeChanged()">
+
+              <option value="">
+                Select Type
+              </option>
+
+              <option value="Expense">
+                Expense
+              </option>
+
+              <option value="Income">
+                Income
+              </option>
+
+              <option value="Transfer">
+                Transfer
+              </option>
+
+            </select>
+
+          </div>
+
+
+
+          <div
+            class="formGroup"
+            id="categoryGroup">
+
+            <label>Category</label>
+
+            <select
+              id="transactionCategory">
+
+            </select>
+
+          </div>
+
+
+
+          <div
+            class="formGroup"
+            id="fromAccountGroup">
+
+            <label>From Account</label>
+
+            <select
+              id="transactionFromAccount">
+
+            </select>
+
+          </div>
+
+
+
+          <div
+            class="formGroup"
+            id="toAccountGroup">
+
+            <label>To Account</label>
+
+            <select
+              id="transactionToAccount">
+
+            </select>
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Amount</label>
+
+            <input
+              type="number"
+              id="transactionAmount"
+              min="0"
+              step="0.01"
+              placeholder="Enter amount">
+
+          </div>
+
+
+
+          <div
+            class="formGroup fullWidth">
+
+            <label>Description</label>
+
+            <input
+              type="text"
+              id="transactionDescription"
+              placeholder="Enter description">
+
+          </div>
+
+
+        </div>
+
+
+
+        <div
+          id="formError"
+          class="formError hidden">
+
+        </div>
+
+
+      </div>
+
+
+
+      <div class="modalFooter">
+
+        <button
+          class="cancelButton"
+          onclick="closeTransactionModal()">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          class="primaryButton"
+          id="saveButton"
+          onclick="saveTransaction()">
+
+          Save Transaction
+
+        </button>
+
+      </div>
+
+
     </div>
-
-    <div id="accountsPage" style="display:none;">
-        <?!= include('Accounts'); ?>
-    </div>
-
-    <div id="budgetPage" style="display:none;">
-    <?!= include('MonthlyBudget'); ?>
-</div>
-
-    <div id="reportsPage" style="display:none;">
-        <?!= include('Reports'); ?>
-    </div>
-
-    <div id="settingsPage" style="display:none;">
-        <?!= include('Settings'); ?>
-    </div>
-
-</div>
 
   </div>
 
-</div>
 
-<?!= include('Utils'); ?>
-<?!= include('DashboardJS'); ?>
-<?!= include('TransactionsJS'); ?>
-<?!= include('CategoriesJS'); ?>
-<?!= include('AccountsJS'); ?>
-<?!= include('MonthlyBudgetJS'); ?>
-<?!= include('ReportsJS'); ?>
-<?!= include('SettingsJS'); ?>
-<?!= include('JavaScript'); ?>
+
+  <!-- =====================================
+       ACCOUNT / CATEGORY / BUDGET MODAL
+  ====================================== -->
+
+  <div
+    id="managementModal"
+    class="modalOverlay hidden">
+
+
+    <div class="modal">
+
+
+      <!-- MODAL HEADER -->
+
+      <div class="modalHeader">
+
+        <h2 id="managementModalTitle">
+
+          Add
+
+        </h2>
+
+
+        <button
+          class="closeButton"
+          onclick="closeManagementModal()">
+
+          ×
+
+        </button>
+
+      </div>
+
+
+
+      <!-- MODAL BODY -->
+
+      <div class="modalBody">
+
+
+        <input
+          type="hidden"
+          id="managementId">
+
+
+
+        <!-- =================================
+             ACCOUNT FORM
+        ================================== -->
+
+        <div
+          id="accountForm"
+          class="managementForm hidden">
+
+
+          <div class="formGroup">
+
+            <label>Account Name</label>
+
+            <input
+              type="text"
+              id="accountName"
+              placeholder="Enter account name">
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Account Type</label>
+
+            <select id="accountType">
+
+              <option value="">
+                Select Type
+              </option>
+
+              <option value="Bank">
+                Bank
+              </option>
+
+              <option value="Cash">
+                Cash
+              </option>
+
+              <option value="Credit Card">
+                Credit Card
+              </option>
+
+              <option value="Wallet">
+                Wallet
+              </option>
+
+              <option value="Investment">
+                Investment
+              </option>
+
+              <option value="Other">
+                Other
+              </option>
+
+            </select>
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Opening Balance</label>
+
+            <input
+              type="number"
+              id="accountOpeningBalance"
+              min="0"
+              step="0.01"
+              placeholder="Enter opening balance">
+
+          </div>
+
+
+        </div>
+
+
+
+        <!-- =================================
+             CATEGORY FORM
+        ================================== -->
+
+        <div
+          id="categoryForm"
+          class="managementForm hidden">
+
+
+          <div class="formGroup">
+
+            <label>Category</label>
+
+            <input
+              type="text"
+              id="categoryName"
+              placeholder="Enter category">
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Type</label>
+
+            <select id="categoryType">
+
+              <option value="">
+                Select Type
+              </option>
+
+              <option value="Expense">
+                Expense
+              </option>
+
+              <option value="Income">
+                Income
+              </option>
+
+            </select>
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Budget Group</label>
+
+            <input
+              type="text"
+              id="categoryBudgetGroup"
+              placeholder="Enter budget group">
+
+          </div>
+
+
+        </div>
+
+
+
+        <!-- =================================
+             BUDGET FORM
+        ================================== -->
+
+        <div
+          id="budgetForm"
+          class="managementForm hidden">
+
+
+          <div class="formGroup">
+
+            <label>Category</label>
+
+            <input
+              type="text"
+              id="budgetCategory"
+              placeholder="Enter budget category">
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Monthly Budget</label>
+
+            <input
+              type="number"
+              id="budgetAmount"
+              min="0"
+              step="0.01"
+              placeholder="Enter monthly budget">
+
+          </div>
+
+
+
+          <div class="formGroup">
+
+            <label>Remarks</label>
+
+            <input
+              type="text"
+              id="budgetRemarks"
+              placeholder="Enter remarks">
+
+          </div>
+
+
+        </div>
+
+
+
+        <!-- ERROR -->
+
+        <div
+          id="managementError"
+          class="formError hidden">
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- MODAL FOOTER -->
+
+      <div class="modalFooter">
+
+        <button
+          class="cancelButton"
+          onclick="closeManagementModal()">
+
+          Cancel
+
+        </button>
+
+
+        <button
+          class="primaryButton"
+          id="managementSaveButton"
+          onclick="saveManagementData()">
+
+          Save
+
+        </button>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================
+       LOADING
+  ====================================== -->
+
+  <div
+    id="loading"
+    class="loadingOverlay hidden">
+
+    <div class="spinner"></div>
+
+  </div>
+
+
+
+  <!-- =====================================
+       JAVASCRIPT
+  ====================================== -->
+
+  <?!= include("JS"); ?>
+
+
+</div>
 
 </body>
 

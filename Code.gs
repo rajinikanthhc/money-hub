@@ -1,758 +1,903 @@
+/* =========================================
+   MONEY HUB - BACKEND
+========================================= */
+
+const SS = SpreadsheetApp.getActiveSpreadsheet();
+
+const SHEETS = {
+  ACCOUNTS: "Accounts",
+  TRANSACTIONS: "Transactions",
+  BUDGET: "Monthly Budget",
+  CATEGORIES: "Categories"
+};
+
+
+/* =========================================
+   WEB APP
+========================================= */
+
 function doGet() {
-  const template = HtmlService.createTemplateFromFile('Index');
-  return template.evaluate().setTitle('Money Hub');
-}
-
-function include(filename) {
-  return HtmlService.createHtmlOutputFromFile(filename).getContent();
-}
-
-function getTransactions() {
-
-  try {
-
-    const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
-
-    const sheet = ss.getSheetByName("Transactions");
-
-    if (!sheet) {
-      throw new Error("Sheet 'Transactions' not found.");
-    }
-
-    const data = sheet.getDataRange().getDisplayValues();
-
-const header = data.shift();
-
-data.sort((a, b) => Number(b[0]) - Number(a[0])); // Sort by ID descending
-
-data.unshift(header);
-
-return data;
-
-  } catch (e) {
-
-    throw new Error(e.message);
-
-  }
-
-}
-
-function getDashboardData() {
-
-  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
-
-  // Transactions
-  const transSheet = ss.getSheetByName("Transactions");
-  const transData = transSheet.getDataRange().getDisplayValues();
-
-  // Accounts
-  const accountSheet = ss.getSheetByName("Accounts");
-  const accountData = accountSheet.getDataRange().getDisplayValues();
-
-  let income = 0;
-  let expense = 0;
-  let openingBalance = 0;
-
-  // Calculate Income & Expense
-  for (let i = 1; i < transData.length; i++) {
-
-    const type = transData[i][2];
-    const amount = Number(transData[i][6]);
-
-    if (type === "Income") {
-      income += amount;
-    } else if (type === "Expense") {
-      expense += amount;
-    }
-
-  }
-
-  // Calculate Opening Balance
-  for (let i = 1; i < accountData.length; i++) {
-
-    openingBalance += Number(accountData[i][3]) || 0;
-
-  }
-
-  return {
-
-    income: income,
-    expense: expense,
-    savings: income - expense,
-    balance: openingBalance + income - expense
-
-  };
-
-} 
-
-function getRecentTransactions() {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
-
-  const data = sheet.getDataRange().getDisplayValues();
-
-  data.shift();
-
-  return data.reverse().slice(0,5);
-
-}
-
-function getPage(page) {
 
   return HtmlService
-    .createHtmlOutputFromFile(page)
+    .createTemplateFromFile("Index")
+    .evaluate()
+    .setTitle("Money Hub")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+
+}
+
+
+/* =========================================
+   INCLUDE FILES
+========================================= */
+
+function include(filename) {
+
+  return HtmlService
+    .createHtmlOutputFromFile(filename)
     .getContent();
 
 }
 
-function getAllTransactions() {
 
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
+/* =========================================
+   LOAD ALL DATA
+========================================= */
 
-  const data = sheet.getDataRange().getDisplayValues();
+function getInitialData() {
 
-  const header = data.shift();
-
-  data.sort(function(a, b) {
-
-    // Convert dd-MMM-yyyy to Date
-    const dateA = new Date(a[1]);
-    const dateB = new Date(b[1]);
-
-    // Newest date first
-    if (dateB.getTime() !== dateA.getTime()) {
-      return dateB - dateA;
-    }
-
-    // Same date -> highest ID first
-    return Number(b[0]) - Number(a[0]);
-
-  });
-
-  data.unshift(header);
-
-  return data;
+  return {
+    accounts: getAccounts(),
+    transactions: getTransactions(),
+    categories: getCategories(),
+    budgets: getBudgets()
+  };
 
 }
 
-function saveTransaction(data) {
 
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
+/* =========================================
+   ACCOUNTS
+========================================= */
 
-  // Get highest existing ID
-  const ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+function getAccounts() {
 
-  let maxId = 0;
+  const sheet = SS.getSheetByName(SHEETS.ACCOUNTS);
 
-  ids.forEach(function(row){
-
-    const id = Number(row[0]);
-
-    if(id > maxId){
-      maxId = id;
-    }
-
-  });
-
-  const newId = maxId + 1;
-
-  sheet.appendRow([
-    newId,
-    Utilities.formatDate(
-      new Date(data.date),
-      Session.getScriptTimeZone(),
-      "dd-MMM-yyyy"
-    ),
-    data.type,
-    data.category,
-    data.fromAccount,
-    data.toAccount,
-    Number(data.amount),
-    data.payment,
-    data.description
-  ]);
-
-  return true;
-
-}
-
-function updateTransaction(data){
-
-  const sheet = SpreadsheetApp
-      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-      .getSheetByName("Transactions");
+  if (!sheet) {
+    throw new Error("Accounts sheet not found.");
+  }
 
   const values = sheet.getDataRange().getValues();
 
-  for(let i=1;i<values.length;i++){
-
-      if(Number(values[i][0]) == Number(data.id)){
-
-          sheet.getRange(i+1,2).setValue(
-              Utilities.formatDate(
-                  new Date(data.date),
-                  Session.getScriptTimeZone(),
-                  "dd-MMM-yyyy"
-              )
-          );
-
-          sheet.getRange(i+1,3).setValue(data.type);
-          sheet.getRange(i+1,4).setValue(data.category);
-          sheet.getRange(i+1,5).setValue(data.fromAccount);
-          sheet.getRange(i+1,6).setValue(data.toAccount);
-          sheet.getRange(i+1,7).setValue(Number(data.amount));
-          sheet.getRange(i+1,8).setValue(data.payment);
-          sheet.getRange(i+1,9).setValue(data.description);
-
-          break;
-
-      }
-
+  if (values.length <= 1) {
+    return [];
   }
+
+  return values
+    .slice(1)
+    .filter(row => row[0] !== "")
+    .map(row => ({
+      id: row[0],
+      name: row[1],
+      type: row[2],
+      openingBalance: Number(row[3]) || 0
+    }));
 
 }
 
-function deleteTransaction(id){
 
-  const sheet = SpreadsheetApp
-      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-      .getSheetByName("Transactions");
+/* =========================================
+   CATEGORIES
+========================================= */
+
+function getCategories() {
+
+  const sheet = SS.getSheetByName(SHEETS.CATEGORIES);
+
+  if (!sheet) {
+    throw new Error("Categories sheet not found.");
+  }
 
   const values = sheet.getDataRange().getValues();
 
-  for(let i=1;i<values.length;i++){
+  if (values.length <= 1) {
+    return [];
+  }
 
-      if(Number(values[i][0]) == Number(id)){
+  return values
+    .slice(1)
+    .filter(row => row[0] !== "")
+    .map(row => ({
+      id: row[0],
+      name: row[1],
+      type: row[2],
+      budgetGroup: row[3]
+    }));
 
-          sheet.deleteRow(i+1);
+}
 
-          break;
+
+/* =========================================
+   BUDGETS
+========================================= */
+
+function getBudgets() {
+
+  const sheet = SS.getSheetByName(SHEETS.BUDGET);
+
+  if (!sheet) {
+    throw new Error("Monthly Budget sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length <= 1) {
+    return [];
+  }
+
+  return values
+    .slice(1)
+    .filter(row => row[0] !== "")
+    .map(row => ({
+      id: row[0],
+      category: row[1],
+      monthlyBudget: Number(row[2]) || 0,
+      remarks: row[3] || ""
+    }));
+
+}
+
+
+/* =========================================
+   TRANSACTIONS
+========================================= */
+
+function getTransactions() {
+
+  const sheet = SS.getSheetByName(SHEETS.TRANSACTIONS);
+
+  if (!sheet) {
+    throw new Error("Transactions sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length <= 1) {
+    return [];
+  }
+
+  const result = values
+    .slice(1)
+    .filter(row => row[0] !== "")
+    .map(row => {
+
+      let date = row[1];
+
+      if (date instanceof Date) {
+
+        date = Utilities.formatDate(
+          date,
+          Session.getScriptTimeZone(),
+          "yyyy-MM-dd"
+        );
+
+      } else {
+
+        date = String(date);
 
       }
 
-  }
+      return {
 
-}
+        id: row[0],
 
-function getAllCategories() {
+        date: date,
 
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Categories");
+        type: row[2] || "",
 
-  return sheet.getDataRange().getDisplayValues();
+        category: row[3] || "",
 
-}
+        fromAccount: row[4] || "",
 
-function saveCategory(data) {
+        toAccount: row[5] || "",
 
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Categories");
+        amount: Number(row[6]) || 0,
 
-  const id = sheet.getLastRow();
+        description: row[7] || ""
 
-  sheet.appendRow([
-    id,
-    data.category,
-    data.type
-  ]);
-
-  return true;
-
-}
-
-function updateCategory(data) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Categories");
-
-  sheet.getRange(data.row + 1, 2, 1, 2).setValues([[
-    data.category,
-    data.type
-  ]]);
-
-  return true;
-
-}
-
-function deleteCategory(row) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Categories");
-
-  sheet.deleteRow(row + 1);
-
-  return true;
-
-}
-
-function getCategoriesByType(type) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Categories");
-
-  const data = sheet.getDataRange().getDisplayValues();
-
-  let list = [];
-
-  for (let i = 1; i < data.length; i++) {
-
-    if (data[i][2] == type) {
-
-      list.push(data[i][1]);
-
-    }
-
-  }
-
-  return list;
-
-}
-
-function getAllAccounts() {
-
-  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
-
-  const accountSheet = ss.getSheetByName("Accounts");
-  const transSheet = ss.getSheetByName("Transactions");
-
-  const accounts = accountSheet.getDataRange().getDisplayValues();
-  const transactions = transSheet.getDataRange().getDisplayValues();
-
-  let result = [];
-
-  for (let i = 1; i < accounts.length; i++) {
-
-    let currentBalance = Number(accounts[i][3]) || 0;
-
-    const accountName = accounts[i][1];
-
-    for (let j = 1; j < transactions.length; j++) {
-
-      const type = transactions[j][2];
-      const fromAccount = transactions[j][4];
-      const toAccount = transactions[j][5];
-      const amount = Number(transactions[j][6]) || 0;
-
-      if (type == "Income" && toAccount == accountName) {
-
-        currentBalance += amount;
-
-      }
-
-      else if (type == "Expense" && fromAccount == accountName) {
-
-        currentBalance -= amount;
-
-      }
-
-      else if (type == "Transfer") {
-
-        if (fromAccount == accountName) {
-
-          currentBalance -= amount;
-
-        }
-
-        if (toAccount == accountName) {
-
-          currentBalance += amount;
-
-        }
-
-      }
-
-    }
-
-    result.push([
-
-      accounts[i][0],      // ID
-      accountName,
-      accounts[i][2],      // Type
-      accounts[i][3],      // Opening Balance
-      currentBalance       // Current Balance
-
-    ]);
-
-  }
-
-  return result;
-
-}
-
-function saveAccount(data) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Accounts");
-
-  const id = sheet.getLastRow();
-
-  sheet.appendRow([
-    id,
-    data.account,
-    data.type,
-    data.balance
-  ]);
-
-  return true;
-
-}
-
-function updateAccount(data) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Accounts");
-
-  sheet.getRange(data.row + 1, 2, 1, 3).setValues([[
-    data.account,
-    data.type,
-    data.balance
-  ]]);
-
-  return true;
-
-}
-
-function deleteAccount(row) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Accounts");
-
-  sheet.deleteRow(row + 1);
-
-  return true;
-
-}
-
-function getAllAccountNames() {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Accounts");
-
-  const data = sheet.getDataRange().getDisplayValues();
-
-  let list = [];
-
-  for (let i = 1; i < data.length; i++) {
-
-    list.push(data[i][1]);
-
-  }
-
-  return list;
-
-}
-
-function getMonthlyBudget() {
-
-  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
-
-  const budgetSheet = ss.getSheetByName("Monthly Budget");
-  const categorySheet = ss.getSheetByName("Categories");
-  const transactionSheet = ss.getSheetByName("Transactions");
-
-  const budgets = budgetSheet.getDataRange().getDisplayValues();
-  const categories = categorySheet.getDataRange().getDisplayValues();
-  const transactions = transactionSheet.getDataRange().getDisplayValues();
-
-  // Category -> Budget Group
-  let categoryMap = {};
-
-  for (let i = 1; i < categories.length; i++) {
-
-    categoryMap[categories[i][1]] = categories[i][3];
-
-  }
-
-  let result = [];
-
-  for (let i = 1; i < budgets.length; i++) {
-
-    const group = budgets[i][1];
-    const budget = Number(budgets[i][2]);
-
-    let actual = 0;
-
-    for (let j = 1; j < transactions.length; j++) {
-
-      const category = transactions[j][3];
-      const amount = Number(transactions[j][6]);
-
-      if (categoryMap[category] == group) {
-
-        actual += amount;
-
-      }
-
-    }
-
-    result.push({
-
-      group: group,
-      budget: budget,
-      actual: actual,
-      remaining: budget - actual
+      };
 
     });
 
-  }
+
+  // Latest transaction first
+  result.sort(function(a, b) {
+
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+
+    if (dateB - dateA !== 0) {
+      return dateB - dateA;
+    }
+
+    // If dates are same, higher ID first
+    return Number(b.id) - Number(a.id);
+
+  });
+
 
   return result;
 
 }
 
-function getReportData() {
+/* =========================================
+   ADD TRANSACTION
+========================================= */
 
-  const ss = SpreadsheetApp.openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM");
+function addTransaction(data) {
 
-  const transSheet = ss.getSheetByName("Transactions");
-  const catSheet = ss.getSheetByName("Categories");
+  validateTransaction(data);
 
-  const transactions = transSheet.getDataRange().getDisplayValues();
-  const categories = catSheet.getDataRange().getDisplayValues();
+  const sheet = SS.getSheetByName(SHEETS.TRANSACTIONS);
 
-  // Category -> Budget Group
-  let categoryMap = {};
-
-  for (let i = 1; i < categories.length; i++) {
-    categoryMap[categories[i][1]] = categories[i][3];
+  if (!sheet) {
+    throw new Error("Transactions sheet not found.");
   }
 
-  let income = 0;
-  let expense = 0;
+  const newId = getNextTransactionId(sheet);
 
-  let budgetSummary = {};
-  let categorySummary = {};
+  const date = parseDate(data.date);
 
-  for (let i = 1; i < transactions.length; i++) {
+  sheet.appendRow([
 
-    const type = transactions[i][2];
-    const category = transactions[i][3];
-    const amount = Number(transactions[i][6]);
+    newId,
 
-    if (type == "Income") {
+    date,
 
-    income += amount;
+    data.type,
 
-}
-else if (type == "Expense") {
+    data.category || "",
 
-    expense += amount;
+    data.fromAccount || "",
 
-    // Category Summary
-    categorySummary[category] =
-        (categorySummary[category] || 0) + amount;
+    data.toAccount || "",
 
-    // Budget Group Summary
-    const group = categoryMap[category] || "Others";
+    Number(data.amount),
 
-    budgetSummary[group] =
-        (budgetSummary[group] || 0) + amount;
+    data.description || ""
 
-}
-  }
+  ]);
 
   return {
 
-    income: income,
-    expense: expense,
-    savings: income - expense,
-    balance: income - expense,
-
-    budgetSummary: budgetSummary,
-    categorySummary: categorySummary
+    success: true,
+    id: newId
 
   };
 
 }
 
-function drawBudgetChart(data){
 
-    const chartData = [["Budget Group","Amount"]];
+/* =========================================
+   UPDATE TRANSACTION
+========================================= */
 
-    for(let group in data.budgetSummary){
+function updateTransaction(data) {
 
-        chartData.push([group,data.budgetSummary[group]]);
+  validateTransaction(data);
 
-    }
+  const sheet = SS.getSheetByName(SHEETS.TRANSACTIONS);
 
-    const chart = new google.visualization.PieChart(
-        document.getElementById("budgetChart")
-    );
-
-    chart.draw(
-        google.visualization.arrayToDataTable(chartData),
-        {
-            legend:{position:"right"},
-            pieHole:0.4
-        }
-    );
-
-}
-
-function drawCategoryChart(data){
-
-    const chartData = [["Category","Amount"]];
-
-    for(let cat in data.categorySummary){
-
-        chartData.push([cat,data.categorySummary[cat]]);
-
-    }
-
-    const chart = new google.visualization.PieChart(
-        document.getElementById("categoryChart")
-    );
-
-    chart.draw(
-        google.visualization.arrayToDataTable(chartData),
-        {
-            legend:{position:"right"}
-        }
-    );
-
-}
-
-function drawIncomeExpenseChart(data){
-
-    const chart = new google.visualization.ColumnChart(
-        document.getElementById("incomeExpenseChart")
-    );
-
-    chart.draw(
-
-        google.visualization.arrayToDataTable([
-
-            ["Type","Amount"],
-
-            ["Income",data.income],
-
-            ["Expense",data.expense]
-
-        ]),
-
-        {
-
-            legend:"none"
-
-        }
-
-    );
-
-}
-
-function saveTransfer(data) {
-
-  const sheet = SpreadsheetApp
-    .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-    .getSheetByName("Transactions");
-
-  // Get highest existing ID
-  const ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
-
-  let maxId = 0;
-
-  ids.forEach(function(row){
-
-    const id = Number(row[0]);
-
-    if(id > maxId){
-      maxId = id;
-    }
-
-  });
-
-  const newId = maxId + 1;
-
-  sheet.appendRow([
-
-    newId,
-
-    Utilities.formatDate(
-      new Date(data.date),
-      Session.getScriptTimeZone(),
-      "dd-MMM-yyyy"
-    ),
-
-    "Transfer",      // Type
-
-    "",              // Category
-
-    data.fromAccount,
-
-    data.toAccount,
-
-    Number(data.amount),
-
-    "",              // Payment Mode
-
-    data.description
-
-  ]);
-
-  return true;
-
-}
-
-function updateTransfer(data){
-
-  const sheet = SpreadsheetApp
-      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-      .getSheetByName("Transactions");
+  if (!sheet) {
+    throw new Error("Transactions sheet not found.");
+  }
 
   const values = sheet.getDataRange().getValues();
 
-  for(let i=1;i<values.length;i++){
+  let rowNumber = -1;
 
-      if(Number(values[i][0]) == Number(data.id)){
+  for (let i = 1; i < values.length; i++) {
 
-          sheet.getRange(i+1,2).setValue(
-              Utilities.formatDate(
-                  new Date(data.date),
-                  Session.getScriptTimeZone(),
-                  "dd-MMM-yyyy"
-              )
-          );
+    if (String(values[i][0]) === String(data.id)) {
 
-          sheet.getRange(i+1,5).setValue(data.fromAccount);
-          sheet.getRange(i+1,6).setValue(data.toAccount);
-          sheet.getRange(i+1,7).setValue(Number(data.amount));
-          sheet.getRange(i+1,9).setValue(data.description);
+      rowNumber = i + 1;
+      break;
 
-          break;
+    }
 
-      }
+  }
+
+  if (rowNumber === -1) {
+
+    throw new Error("Transaction not found.");
+
+  }
+
+  sheet.getRange(rowNumber, 1, 1, 8).setValues([[
+
+    data.id,
+
+    parseDate(data.date),
+
+    data.type,
+
+    data.category || "",
+
+    data.fromAccount || "",
+
+    data.toAccount || "",
+
+    Number(data.amount),
+
+    data.description || ""
+
+  ]]);
+
+  return {
+
+    success: true
+
+  };
+
+}
+
+
+/* =========================================
+   DELETE TRANSACTION
+========================================= */
+
+function deleteTransaction(id) {
+
+  const sheet = SS.getSheetByName(SHEETS.TRANSACTIONS);
+
+  if (!sheet) {
+    throw new Error("Transactions sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(id)) {
+
+      sheet.deleteRow(i + 1);
+
+      return {
+
+        success: true
+
+      };
+
+    }
+
+  }
+
+  throw new Error("Transaction not found.");
+
+}
+
+
+/* =========================================
+   NEXT TRANSACTION ID
+========================================= */
+
+function getNextTransactionId(sheet) {
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    return 1;
+  }
+
+  const ids = sheet
+    .getRange(2, 1, lastRow - 1, 1)
+    .getValues()
+    .flat()
+    .map(Number)
+    .filter(n => !isNaN(n));
+
+  if (ids.length === 0) {
+    return 1;
+  }
+
+  return Math.max.apply(null, ids) + 1;
+
+}
+
+
+/* =========================================
+   VALIDATION
+========================================= */
+
+function validateTransaction(data) {
+
+  if (!data.date) {
+
+    throw new Error("Please select a date.");
+
+  }
+
+  if (!data.type) {
+
+    throw new Error("Please select transaction type.");
+
+  }
+
+  if (!data.amount || Number(data.amount) <= 0) {
+
+    throw new Error("Please enter a valid amount.");
+
+  }
+
+  if (data.type === "Expense") {
+
+    if (!data.category) {
+      throw new Error("Please select a category.");
+    }
+
+    if (!data.fromAccount) {
+      throw new Error("Please select From Account.");
+    }
+
+  }
+
+  if (data.type === "Income") {
+
+    if (!data.category) {
+      throw new Error("Please select a category.");
+    }
+
+    if (!data.toAccount) {
+      throw new Error("Please select To Account.");
+    }
+
+  }
+
+  if (data.type === "Transfer") {
+
+    if (!data.fromAccount) {
+      throw new Error("Please select From Account.");
+    }
+
+    if (!data.toAccount) {
+      throw new Error("Please select To Account.");
+    }
+
+    if (data.fromAccount === data.toAccount) {
+
+      throw new Error(
+        "From Account and To Account cannot be the same."
+      );
+
+    }
 
   }
 
 }
 
-function updateTransfer(data){
 
-  const sheet = SpreadsheetApp
-      .openById("1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM")
-      .getSheetByName("Transactions");
+/* =========================================
+   DATE
+========================================= */
 
-  const row = data.row + 1;
+function parseDate(dateString) {
 
-  sheet.getRange(row,2).setValue(data.date);
-  sheet.getRange(row,5).setValue(data.fromAccount);
-  sheet.getRange(row,6).setValue(data.toAccount);
-  sheet.getRange(row,7).setValue(data.amount);
-  sheet.getRange(row,9).setValue(data.description);
+  if (dateString instanceof Date) {
+    return dateString;
+  }
 
+  const parts = String(dateString).split("-");
+
+  if (parts.length !== 3) {
+
+    throw new Error("Invalid date.");
+
+  }
+
+  return new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
+  );
+
+}
+
+/* =========================================
+   ACCOUNTS - ADD / UPDATE / DELETE
+========================================= */
+
+function addAccount(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.ACCOUNTS);
+
+  if (!sheet) {
+    throw new Error("Accounts sheet not found.");
+  }
+
+  if (!data.name) {
+    throw new Error("Please enter account name.");
+  }
+
+  if (!data.type) {
+    throw new Error("Please select account type.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+
+    return String(row[1]).trim().toLowerCase() ===
+           String(data.name).trim().toLowerCase();
+
+  });
+
+  if (duplicate) {
+    throw new Error("Account already exists.");
+  }
+
+  const newId = getNextId(sheet);
+
+  sheet.appendRow([
+    newId,
+    data.name.trim(),
+    data.type,
+    Number(data.openingBalance) || 0
+  ]);
+
+  return { success: true };
+}
+
+
+function updateAccount(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.ACCOUNTS);
+
+  if (!sheet) {
+    throw new Error("Accounts sheet not found.");
+  }
+
+  if (!data.name) {
+    throw new Error("Please enter account name.");
+  }
+
+  if (!data.type) {
+    throw new Error("Please select account type.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+
+    return String(row[0]) !== String(data.id) &&
+           String(row[1]).trim().toLowerCase() ===
+           String(data.name).trim().toLowerCase();
+
+  });
+
+  if (duplicate) {
+    throw new Error("Account already exists.");
+  }
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(data.id)) {
+
+      sheet.getRange(i + 1, 1, 1, 4).setValues([[
+        data.id,
+        data.name.trim(),
+        data.type,
+        Number(data.openingBalance) || 0
+      ]]);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Account not found.");
+}
+
+
+function deleteAccount(id) {
+
+  const sheet = SS.getSheetByName(SHEETS.ACCOUNTS);
+
+  if (!sheet) {
+    throw new Error("Accounts sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(id)) {
+
+      sheet.deleteRow(i + 1);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Account not found.");
+}
+
+
+/* =========================================
+   CATEGORIES - ADD / UPDATE / DELETE
+========================================= */
+
+function addCategory(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.CATEGORIES);
+
+  if (!sheet) {
+    throw new Error("Categories sheet not found.");
+  }
+
+  if (!data.name) {
+    throw new Error("Please enter category name.");
+  }
+
+  if (!data.type) {
+    throw new Error("Please select category type.");
+  }
+
+  if (!data.budgetGroup) {
+    throw new Error("Please enter budget group.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+
+    return String(row[1]).trim().toLowerCase() ===
+           String(data.name).trim().toLowerCase();
+
+  });
+
+  if (duplicate) {
+    throw new Error("Category already exists.");
+  }
+
+  const newId = getNextId(sheet);
+
+  sheet.appendRow([
+    newId,
+    data.name.trim(),
+    data.type,
+    data.budgetGroup.trim()
+  ]);
+
+  return { success: true };
+}
+
+
+function updateCategory(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.CATEGORIES);
+
+  if (!sheet) {
+    throw new Error("Categories sheet not found.");
+  }
+
+  if (!data.name) {
+    throw new Error("Please enter category name.");
+  }
+
+  if (!data.type) {
+    throw new Error("Please select category type.");
+  }
+
+  if (!data.budgetGroup) {
+    throw new Error("Please enter budget group.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+
+    return String(row[0]) !== String(data.id) &&
+           String(row[1]).trim().toLowerCase() ===
+           String(data.name).trim().toLowerCase();
+
+  });
+
+  if (duplicate) {
+    throw new Error("Category already exists.");
+  }
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(data.id)) {
+
+      sheet.getRange(i + 1, 1, 1, 4).setValues([[
+        data.id,
+        data.name.trim(),
+        data.type,
+        data.budgetGroup.trim()
+      ]]);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Category not found.");
+}
+
+
+function deleteCategory(id) {
+
+  const sheet = SS.getSheetByName(SHEETS.CATEGORIES);
+
+  if (!sheet) {
+    throw new Error("Categories sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(id)) {
+
+      sheet.deleteRow(i + 1);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Category not found.");
+}
+
+
+/* =========================================
+   BUDGET - ADD / UPDATE / DELETE
+========================================= */
+
+function addBudget(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.BUDGET);
+
+  if (!sheet) {
+    throw new Error("Monthly Budget sheet not found.");
+  }
+
+  if (!data.category) {
+    throw new Error("Please enter budget category.");
+  }
+
+  if (Number(data.monthlyBudget) < 0) {
+    throw new Error("Please enter a valid budget.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+
+    return String(row[1]).trim().toLowerCase() ===
+           String(data.category).trim().toLowerCase();
+
+  });
+
+  if (duplicate) {
+    throw new Error("Budget category already exists.");
+  }
+
+  const newId = getNextId(sheet);
+
+  sheet.appendRow([
+    newId,
+    data.category.trim(),
+    Number(data.monthlyBudget) || 0,
+    data.remarks ? data.remarks.trim() : ""
+  ]);
+
+  return { success: true };
+}
+
+
+function updateBudget(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.BUDGET);
+
+  if (!sheet) {
+    throw new Error("Monthly Budget sheet not found.");
+  }
+
+  if (!data.category) {
+    throw new Error("Please enter budget category.");
+  }
+
+  if (Number(data.monthlyBudget) < 0) {
+    throw new Error("Please enter a valid budget.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+
+    return String(row[0]) !== String(data.id) &&
+           String(row[1]).trim().toLowerCase() ===
+           String(data.category).trim().toLowerCase();
+
+  });
+
+  if (duplicate) {
+    throw new Error("Budget category already exists.");
+  }
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(data.id)) {
+
+      sheet.getRange(i + 1, 1, 1, 4).setValues([[
+        data.id,
+        data.category.trim(),
+        Number(data.monthlyBudget) || 0,
+        data.remarks ? data.remarks.trim() : ""
+      ]]);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Budget not found.");
+}
+
+
+function deleteBudget(id) {
+
+  const sheet = SS.getSheetByName(SHEETS.BUDGET);
+
+  if (!sheet) {
+    throw new Error("Monthly Budget sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(id)) {
+
+      sheet.deleteRow(i + 1);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Budget not found.");
+}
+
+
+/* =========================================
+   GENERIC NEXT ID
+========================================= */
+
+function getNextId(sheet) {
+
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) {
+    return 1;
+  }
+
+  const ids = sheet
+    .getRange(2, 1, lastRow - 1, 1)
+    .getValues()
+    .flat()
+    .map(Number)
+    .filter(function(n) {
+      return !isNaN(n);
+    });
+
+  if (ids.length === 0) {
+    return 1;
+  }
+
+  return Math.max.apply(null, ids) + 1;
 }

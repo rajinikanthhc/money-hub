@@ -1,0 +1,2044 @@
+<script>
+
+/* =========================================
+   MONEY HUB - FRONTEND
+========================================= */
+
+
+let accounts = [];
+
+let transactions = [];
+
+let categories = [];
+
+let budgets = [];
+
+let filteredTransactions = [];
+
+let editingTransactionId = null;
+
+
+/* =========================================
+   INITIAL LOAD
+========================================= */
+
+window.onload = function () {
+
+  showLoading();
+
+  google.script.run
+
+    .withSuccessHandler(function (data) {
+
+      accounts = data.accounts || [];
+
+      transactions = data.transactions || [];
+
+      categories = data.categories || [];
+
+      budgets = data.budgets || [];
+
+
+      renderTransactions();
+
+      renderAccounts();
+
+      renderCategories();
+
+      renderBudgets();
+
+      prepareForm();
+
+      hideLoading();
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      hideLoading();
+
+      alert(error.message);
+
+    })
+
+    .getInitialData();
+
+};
+
+
+/* =========================================
+   TRANSACTIONS
+========================================= */
+
+function renderTransactions() {
+
+  const body =
+    document.getElementById(
+      "transactionsBody"
+    );
+
+  body.innerHTML = "";
+
+  filteredTransactions =
+    [...transactions];
+
+
+  if (filteredTransactions.length === 0) {
+
+    body.innerHTML = `
+
+      <tr>
+
+        <td colspan="9"
+            style="text-align:center;padding:30px;color:#64748b">
+
+          No transactions found.
+
+        </td>
+
+      </tr>
+
+    `;
+
+    return;
+
+  }
+
+
+  filteredTransactions.forEach(function (t) {
+
+    const row =
+      document.createElement("tr");
+
+
+    row.innerHTML = `
+
+      <td>${escapeHtml(t.id)}</td>
+
+      <td>${formatDate(t.date)}</td>
+
+      <td>
+        <span class="${getTypeClass(t.type)}">
+          ${escapeHtml(t.type)}
+        </span>
+      </td>
+
+      <td>${escapeHtml(t.category)}</td>
+
+      <td>${escapeHtml(t.fromAccount)}</td>
+
+      <td>${escapeHtml(t.toAccount)}</td>
+
+      <td style="font-weight:600">
+        ₹${formatAmount(t.amount)}
+      </td>
+
+      <td>${escapeHtml(t.description)}</td>
+
+      <td>
+
+        <div class="actionButtons">
+
+          <button
+            class="editButton"
+            onclick="editTransaction('${t.id}')">
+
+            Edit
+
+          </button>
+
+          <button
+            class="deleteButton"
+            onclick="deleteTransaction('${t.id}')">
+
+            Delete
+
+          </button>
+
+        </div>
+
+      </td>
+
+    `;
+
+
+    body.appendChild(row);
+
+  });
+
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
+
+function filterTransactions() {
+
+  const search =
+    document
+      .getElementById("searchInput")
+      .value
+      .toLowerCase()
+      .trim();
+
+
+  const clearButton =
+    document.getElementById("clearSearch");
+
+
+  clearButton.style.display =
+    search ? "block" : "none";
+
+
+  if (!search) {
+
+    filteredTransactions =
+      [...transactions];
+
+  } else {
+
+    filteredTransactions =
+      transactions.filter(function (t) {
+
+        return [
+
+          t.id,
+
+          t.date,
+
+          t.type,
+
+          t.category,
+
+          t.fromAccount,
+
+          t.toAccount,
+
+          t.amount,
+
+          t.description
+
+        ]
+
+          .join(" ")
+
+          .toLowerCase()
+
+          .includes(search);
+
+      });
+
+  }
+
+
+  renderFilteredTransactions();
+
+}
+
+
+function renderFilteredTransactions() {
+
+  const body =
+    document.getElementById(
+      "transactionsBody"
+    );
+
+  body.innerHTML = "";
+
+
+  if (filteredTransactions.length === 0) {
+
+    body.innerHTML = `
+
+      <tr>
+
+        <td colspan="9"
+            style="text-align:center;padding:30px;color:#64748b">
+
+          No transactions found.
+
+        </td>
+
+      </tr>
+
+    `;
+
+    return;
+
+  }
+
+
+  filteredTransactions.forEach(function (t) {
+
+    const row =
+      document.createElement("tr");
+
+
+    row.innerHTML = `
+
+      <td>${escapeHtml(t.id)}</td>
+
+      <td>${formatDate(t.date)}</td>
+
+      <td>
+        <span class="${getTypeClass(t.type)}">
+          ${escapeHtml(t.type)}
+        </span>
+      </td>
+
+      <td>${escapeHtml(t.category)}</td>
+
+      <td>${escapeHtml(t.fromAccount)}</td>
+
+      <td>${escapeHtml(t.toAccount)}</td>
+
+      <td style="font-weight:600">
+        ₹${formatAmount(t.amount)}
+      </td>
+
+      <td>${escapeHtml(t.description)}</td>
+
+      <td>
+
+        <div class="actionButtons">
+
+          <button
+            class="editButton"
+            onclick="editTransaction('${t.id}')">
+
+            Edit
+
+          </button>
+
+          <button
+            class="deleteButton"
+            onclick="deleteTransaction('${t.id}')">
+
+            Delete
+
+          </button>
+
+        </div>
+
+      </td>
+
+    `;
+
+
+    body.appendChild(row);
+
+  });
+
+}
+
+
+function clearSearch() {
+
+  document.getElementById(
+    "searchInput"
+  ).value = "";
+
+  filterTransactions();
+
+}
+
+
+/* =========================================
+   OPEN ADD MODAL
+========================================= */
+
+function openTransactionModal() {
+
+  editingTransactionId = null;
+
+  document.getElementById(
+    "modalTitle"
+  ).textContent = "Add Transaction";
+
+
+  document.getElementById(
+    "saveButton"
+  ).textContent = "Save Transaction";
+
+
+  document.getElementById(
+    "transactionId"
+  ).value = "";
+
+
+  prepareForm();
+
+
+  document.getElementById(
+    "transactionDate"
+  ).value = getToday();
+
+
+  document.getElementById(
+    "transactionType"
+  ).value = "";
+
+
+  document.getElementById(
+    "transactionCategory"
+  ).value = "";
+
+
+  document.getElementById(
+    "transactionFromAccount"
+  ).value = "";
+
+
+  document.getElementById(
+    "transactionToAccount"
+  ).value = "";
+
+
+  document.getElementById(
+    "transactionAmount"
+  ).value = "";
+
+
+  document.getElementById(
+    "transactionDescription"
+  ).value = "";
+
+
+  hideFormError();
+
+
+  document.getElementById(
+    "transactionModal"
+  ).classList.remove("hidden");
+
+}
+
+
+/* =========================================
+   CLOSE MODAL
+========================================= */
+
+function closeTransactionModal() {
+
+  document.getElementById(
+    "transactionModal"
+  ).classList.add("hidden");
+
+}
+
+
+/* =========================================
+   PREPARE FORM
+========================================= */
+
+function prepareForm() {
+
+  populateAccounts();
+
+  populateCategories();
+
+  transactionTypeChanged();
+
+}
+
+
+/* =========================================
+   ACCOUNT DROPDOWNS
+========================================= */
+
+function populateAccounts() {
+
+  const from =
+    document.getElementById(
+      "transactionFromAccount"
+    );
+
+  const to =
+    document.getElementById(
+      "transactionToAccount"
+    );
+
+
+  const options = `
+
+    <option value="">
+      Select Account
+    </option>
+
+    ${
+      accounts.map(function (a) {
+
+        return `
+
+          <option value="${escapeAttr(a.name)}">
+
+            ${escapeHtml(a.name)}
+
+          </option>
+
+        `;
+
+      }).join("")
+
+    }
+
+  `;
+
+
+  from.innerHTML = options;
+
+  to.innerHTML = options;
+
+}
+
+
+/* =========================================
+   CATEGORY DROPDOWN
+========================================= */
+
+function populateCategories(type) {
+
+  const select =
+    document.getElementById(
+      "transactionCategory"
+    );
+
+
+  let list = categories;
+
+
+  if (type) {
+
+    list =
+      categories.filter(function (c) {
+
+        return c.type === type;
+
+      });
+
+  }
+
+
+  select.innerHTML = `
+
+    <option value="">
+      Select Category
+    </option>
+
+    ${
+      list.map(function (c) {
+
+        return `
+
+          <option value="${escapeAttr(c.name)}">
+
+            ${escapeHtml(c.name)}
+
+          </option>
+
+        `;
+
+      }).join("")
+
+    }
+
+  `;
+
+}
+
+
+/* =========================================
+   TYPE CHANGE
+========================================= */
+
+function transactionTypeChanged() {
+
+  const type =
+    document.getElementById(
+      "transactionType"
+    ).value;
+
+
+  const categoryGroup =
+    document.getElementById(
+      "categoryGroup"
+    );
+
+  const fromGroup =
+    document.getElementById(
+      "fromAccountGroup"
+    );
+
+  const toGroup =
+    document.getElementById(
+      "toAccountGroup"
+    );
+
+
+  categoryGroup.classList.remove(
+    "hidden"
+  );
+
+  fromGroup.classList.remove(
+    "hidden"
+  );
+
+  toGroup.classList.remove(
+    "hidden"
+  );
+
+
+  populateCategories(type);
+
+
+  if (type === "Expense") {
+
+    fromGroup.classList.remove(
+      "hidden"
+    );
+
+    toGroup.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  else if (type === "Income") {
+
+    fromGroup.classList.add(
+      "hidden"
+    );
+
+    toGroup.classList.remove(
+      "hidden"
+    );
+
+  }
+
+
+  else if (type === "Transfer") {
+
+    categoryGroup.classList.add(
+      "hidden"
+    );
+
+    fromGroup.classList.remove(
+      "hidden"
+    );
+
+    toGroup.classList.remove(
+      "hidden"
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   SAVE TRANSACTION
+========================================= */
+
+function saveTransaction() {
+
+  hideFormError();
+
+
+  const data = {
+
+    id:
+      document.getElementById(
+        "transactionId"
+      ).value,
+
+    date:
+      document.getElementById(
+        "transactionDate"
+      ).value,
+
+    type:
+      document.getElementById(
+        "transactionType"
+      ).value,
+
+    category:
+      document.getElementById(
+        "transactionCategory"
+      ).value,
+
+    fromAccount:
+      document.getElementById(
+        "transactionFromAccount"
+      ).value,
+
+    toAccount:
+      document.getElementById(
+        "transactionToAccount"
+      ).value,
+
+    amount:
+      document.getElementById(
+        "transactionAmount"
+      ).value,
+
+    description:
+      document.getElementById(
+        "transactionDescription"
+      ).value.trim()
+
+  };
+
+
+  if (!data.date) {
+
+    showFormError(
+      "Please select a date."
+    );
+
+    return;
+
+  }
+
+
+  if (!data.type) {
+
+    showFormError(
+      "Please select transaction type."
+    );
+
+    return;
+
+  }
+
+
+  if (!data.amount ||
+      Number(data.amount) <= 0) {
+
+    showFormError(
+      "Please enter a valid amount."
+    );
+
+    return;
+
+  }
+
+
+  showLoading();
+
+
+  if (editingTransactionId) {
+
+    google.script.run
+
+      .withSuccessHandler(function () {
+
+        closeTransactionModal();
+
+        reloadData();
+
+      })
+
+      .withFailureHandler(function (error) {
+
+        hideLoading();
+
+        showFormError(error.message);
+
+      })
+
+      .updateTransaction(data);
+
+  }
+
+  else {
+
+    google.script.run
+
+      .withSuccessHandler(function () {
+
+        closeTransactionModal();
+
+        reloadData();
+
+      })
+
+      .withFailureHandler(function (error) {
+
+        hideLoading();
+
+        showFormError(error.message);
+
+      })
+
+      .addTransaction(data);
+
+  }
+
+}
+
+
+/* =========================================
+   EDIT
+========================================= */
+
+function editTransaction(id) {
+
+  const t =
+    transactions.find(function (item) {
+
+      return String(item.id) === String(id);
+
+    });
+
+
+  if (!t) {
+
+    alert("Transaction not found.");
+
+    return;
+
+  }
+
+
+  editingTransactionId = id;
+
+
+  document.getElementById(
+    "modalTitle"
+  ).textContent = "Edit Transaction";
+
+
+  document.getElementById(
+    "saveButton"
+  ).textContent = "Update Transaction";
+
+
+  document.getElementById(
+    "transactionId"
+  ).value = t.id;
+
+
+  document.getElementById(
+    "transactionDate"
+  ).value = t.date;
+
+
+  document.getElementById(
+    "transactionType"
+  ).value = t.type;
+
+
+  transactionTypeChanged();
+
+
+  document.getElementById(
+    "transactionCategory"
+  ).value = t.category;
+
+
+  document.getElementById(
+    "transactionFromAccount"
+  ).value = t.fromAccount;
+
+
+  document.getElementById(
+    "transactionToAccount"
+  ).value = t.toAccount;
+
+
+  document.getElementById(
+    "transactionAmount"
+  ).value = t.amount;
+
+
+  document.getElementById(
+    "transactionDescription"
+  ).value = t.description;
+
+
+  hideFormError();
+
+
+  document.getElementById(
+    "transactionModal"
+  ).classList.remove("hidden");
+
+}
+
+
+/* =========================================
+   DELETE
+========================================= */
+
+function deleteTransaction(id) {
+
+  const t =
+    transactions.find(function (item) {
+
+      return String(item.id) === String(id);
+
+    });
+
+
+  if (!t) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      "Delete transaction #" +
+      id +
+      "?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  showLoading();
+
+
+  google.script.run
+
+    .withSuccessHandler(function () {
+
+      reloadData();
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      hideLoading();
+
+      alert(error.message);
+
+    })
+
+    .deleteTransaction(id);
+
+}
+
+
+/* =========================================
+   RELOAD DATA
+========================================= */
+
+function reloadData() {
+
+  google.script.run
+
+    .withSuccessHandler(function (data) {
+
+      accounts = data.accounts || [];
+
+      transactions = data.transactions || [];
+
+      categories = data.categories || [];
+
+      budgets = data.budgets || [];
+
+
+      renderTransactions();
+
+      renderAccounts();
+
+      renderCategories();
+
+      renderBudgets();
+
+      hideLoading();
+
+    })
+
+    .withFailureHandler(function (error) {
+
+      hideLoading();
+
+      alert(error.message);
+
+    })
+
+    .getInitialData();
+
+}
+
+
+/* =========================================
+   ACCOUNTS PAGE
+========================================= */
+
+function renderAccounts() {
+
+  const body =
+    document.getElementById(
+      "accountsBody"
+    );
+
+  body.innerHTML = "";
+
+
+  accounts.forEach(function (a) {
+
+    body.innerHTML += `
+
+      <tr>
+
+        <td>${escapeHtml(a.id)}</td>
+
+        <td>${escapeHtml(a.name)}</td>
+
+        <td>${escapeHtml(a.type)}</td>
+
+        <td>
+          ₹${formatAmount(a.openingBalance)}
+        </td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+
+/* =========================================
+   CATEGORIES PAGE
+========================================= */
+
+function renderCategories() {
+
+  const body =
+    document.getElementById(
+      "categoriesBody"
+    );
+
+  body.innerHTML = "";
+
+
+  categories.forEach(function (c) {
+
+    body.innerHTML += `
+
+      <tr>
+
+        <td>${escapeHtml(c.id)}</td>
+
+        <td>${escapeHtml(c.name)}</td>
+
+        <td>${escapeHtml(c.type)}</td>
+
+        <td>${escapeHtml(c.budgetGroup)}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+
+/* =========================================
+   BUDGET PAGE
+========================================= */
+
+function renderBudgets() {
+
+  const body =
+    document.getElementById(
+      "budgetBody"
+    );
+
+  body.innerHTML = "";
+
+
+  budgets.forEach(function (b) {
+
+    body.innerHTML += `
+
+      <tr>
+
+        <td>${escapeHtml(b.id)}</td>
+
+        <td>${escapeHtml(b.category)}</td>
+
+        <td>
+          ₹${formatAmount(b.monthlyBudget)}
+        </td>
+
+        <td>${escapeHtml(b.remarks)}</td>
+
+      </tr>
+
+    `;
+
+  });
+
+}
+
+
+/* =========================================
+   PAGE NAVIGATION
+========================================= */
+
+function showPage(page) {
+
+  document
+    .querySelectorAll(".page")
+    .forEach(function (p) {
+
+      p.classList.add("hidden");
+
+    });
+
+
+  document
+    .getElementById(
+      page + "Page"
+    )
+    .classList.remove("hidden");
+
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+function showLoading() {
+
+  document
+    .getElementById("loading")
+    .classList.remove("hidden");
+
+}
+
+
+function hideLoading() {
+
+  document
+    .getElementById("loading")
+    .classList.add("hidden");
+
+}
+
+
+/* =========================================
+   FORM ERROR
+========================================= */
+
+function showFormError(message) {
+
+  const box =
+    document.getElementById(
+      "formError"
+    );
+
+  box.textContent = message;
+
+  box.classList.remove("hidden");
+
+}
+
+
+function hideFormError() {
+
+  document
+    .getElementById("formError")
+    .classList.add("hidden");
+
+}
+
+
+/* =========================================
+   TYPE CLASS
+========================================= */
+
+function getTypeClass(type) {
+
+  if (type === "Expense") {
+    return "typeExpense";
+  }
+
+  if (type === "Income") {
+    return "typeIncome";
+  }
+
+  if (type === "Transfer") {
+    return "typeTransfer";
+  }
+
+  return "";
+
+}
+
+
+/* =========================================
+   DATE
+========================================= */
+
+function getToday() {
+
+  const now = new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(2, "0");
+
+
+  return `${year}-${month}-${day}`;
+
+}
+
+
+function formatDate(date) {
+
+  if (!date) {
+    return "";
+  }
+
+
+  const parts =
+    String(date).split("-");
+
+
+  if (parts.length === 3) {
+
+    return (
+      parts[2] +
+      "-" +
+      parts[1] +
+      "-" +
+      parts[0]
+    );
+
+  }
+
+
+  return date;
+
+}
+
+
+/* =========================================
+   AMOUNT
+========================================= */
+
+function formatAmount(amount) {
+
+  return Number(amount || 0)
+    .toLocaleString(
+      "en-IN",
+      {
+        maximumFractionDigits: 2
+      }
+    );
+
+}
+
+
+/* =========================================
+   HTML SECURITY
+========================================= */
+
+function escapeHtml(value) {
+
+  if (value === null ||
+      value === undefined) {
+
+    return "";
+
+  }
+
+
+  return String(value)
+
+    .replace(/&/g, "&amp;")
+
+    .replace(/</g, "&lt;")
+
+    .replace(/>/g, "&gt;")
+
+    .replace(/"/g, "&quot;")
+
+    .replace(/'/g, "&#039;");
+
+}
+
+
+function escapeAttr(value) {
+
+  return escapeHtml(value);
+
+}
+
+
+/* =========================================
+   CLOSE MODAL WHEN CLICKING OUTSIDE
+========================================= */
+
+document.addEventListener(
+  "click",
+  function (event) {
+
+    const modal =
+      document.getElementById(
+        "transactionModal"
+      );
+
+
+    if (
+      event.target === modal
+    ) {
+
+      closeTransactionModal();
+
+    }
+
+  }
+);
+
+
+/* =========================================
+   ESC KEY
+========================================= */
+
+document.addEventListener(
+  "keydown",
+  function (event) {
+
+    if (
+      event.key === "Escape"
+    ) {
+
+      closeTransactionModal();
+
+    }
+
+  }
+);
+
+/* =========================================
+   MANAGEMENT MODAL
+========================================= */
+
+let managementMode = "";
+let managementEditId = null;
+
+
+function openManagementModal(mode) {
+
+  managementMode = mode;
+
+  managementEditId = null;
+
+
+  document.getElementById(
+    "managementModal"
+  ).classList.remove("hidden");
+
+
+  document
+    .querySelectorAll(".managementForm")
+    .forEach(function(form) {
+
+      form.classList.add("hidden");
+
+    });
+
+
+  document.getElementById(
+    "managementError"
+  ).classList.add("hidden");
+
+
+  if (mode === "account") {
+
+    document.getElementById(
+      "managementModalTitle"
+    ).textContent = "Add Account";
+
+    document.getElementById(
+      "accountForm"
+    ).classList.remove("hidden");
+
+    clearAccountForm();
+
+  }
+
+
+  if (mode === "category") {
+
+    document.getElementById(
+      "managementModalTitle"
+    ).textContent = "Add Category";
+
+    document.getElementById(
+      "categoryForm"
+    ).classList.remove("hidden");
+
+    clearCategoryForm();
+
+  }
+
+
+  if (mode === "budget") {
+
+    document.getElementById(
+      "managementModalTitle"
+    ).textContent = "Add Budget";
+
+    document.getElementById(
+      "budgetForm"
+    ).classList.remove("hidden");
+
+    clearBudgetForm();
+
+  }
+
+}
+
+
+function openAccountModal() {
+
+  openManagementModal("account");
+
+}
+
+
+function openCategoryModal() {
+
+  openManagementModal("category");
+
+}
+
+
+function openBudgetModal() {
+
+  openManagementModal("budget");
+
+}
+
+
+function closeManagementModal() {
+
+  document.getElementById(
+    "managementModal"
+  ).classList.add("hidden");
+
+}
+
+
+/* =========================================
+   CLEAR FORMS
+========================================= */
+
+function clearAccountForm() {
+
+  document.getElementById(
+    "managementId"
+  ).value = "";
+
+  document.getElementById(
+    "accountName"
+  ).value = "";
+
+  document.getElementById(
+    "accountType"
+  ).value = "";
+
+  document.getElementById(
+    "accountOpeningBalance"
+  ).value = "";
+
+}
+
+
+function clearCategoryForm() {
+
+  document.getElementById(
+    "managementId"
+  ).value = "";
+
+  document.getElementById(
+    "categoryName"
+  ).value = "";
+
+  document.getElementById(
+    "categoryType"
+  ).value = "";
+
+  document.getElementById(
+    "categoryBudgetGroup"
+  ).value = "";
+
+}
+
+
+function clearBudgetForm() {
+
+  document.getElementById(
+    "managementId"
+  ).value = "";
+
+  document.getElementById(
+    "budgetCategory"
+  ).value = "";
+
+  document.getElementById(
+    "budgetAmount"
+  ).value = "";
+
+  document.getElementById(
+    "budgetRemarks"
+  ).value = "";
+
+}
+
+
+/* =========================================
+   EDIT ACCOUNT
+========================================= */
+
+function editAccount(id) {
+
+  const account =
+    accounts.find(function(a) {
+
+      return String(a.id) === String(id);
+
+    });
+
+
+  if (!account) {
+    return;
+  }
+
+
+  openManagementModal("account");
+
+
+  managementEditId = id;
+
+
+  document.getElementById(
+    "managementModalTitle"
+  ).textContent = "Edit Account";
+
+
+  document.getElementById(
+    "managementId"
+  ).value = account.id;
+
+
+  document.getElementById(
+    "accountName"
+  ).value = account.name;
+
+
+  document.getElementById(
+    "accountType"
+  ).value = account.type;
+
+
+  document.getElementById(
+    "accountOpeningBalance"
+  ).value = account.openingBalance;
+
+}
+
+
+/* =========================================
+   EDIT CATEGORY
+========================================= */
+
+function editCategory(id) {
+
+  const category =
+    categories.find(function(c) {
+
+      return String(c.id) === String(id);
+
+    });
+
+
+  if (!category) {
+    return;
+  }
+
+
+  openManagementModal("category");
+
+
+  managementEditId = id;
+
+
+  document.getElementById(
+    "managementModalTitle"
+  ).textContent = "Edit Category";
+
+
+  document.getElementById(
+    "managementId"
+  ).value = category.id;
+
+
+  document.getElementById(
+    "categoryName"
+  ).value = category.name;
+
+
+  document.getElementById(
+    "categoryType"
+  ).value = category.type;
+
+
+  document.getElementById(
+    "categoryBudgetGroup"
+  ).value = category.budgetGroup;
+
+}
+
+
+/* =========================================
+   EDIT BUDGET
+========================================= */
+
+function editBudget(id) {
+
+  const budget =
+    budgets.find(function(b) {
+
+      return String(b.id) === String(id);
+
+    });
+
+
+  if (!budget) {
+    return;
+  }
+
+
+  openManagementModal("budget");
+
+
+  managementEditId = id;
+
+
+  document.getElementById(
+    "managementModalTitle"
+  ).textContent = "Edit Budget";
+
+
+  document.getElementById(
+    "managementId"
+  ).value = budget.id;
+
+
+  document.getElementById(
+    "budgetCategory"
+  ).value = budget.category;
+
+
+  document.getElementById(
+    "budgetAmount"
+  ).value = budget.monthlyBudget;
+
+
+  document.getElementById(
+    "budgetRemarks"
+  ).value = budget.remarks;
+
+}
+
+
+/* =========================================
+   SAVE MANAGEMENT DATA
+========================================= */
+
+function saveManagementData() {
+
+  hideManagementError();
+
+
+  let data;
+
+
+  if (managementMode === "account") {
+
+    data = {
+
+      id:
+        document.getElementById(
+          "managementId"
+        ).value,
+
+      name:
+        document.getElementById(
+          "accountName"
+        ).value.trim(),
+
+      type:
+        document.getElementById(
+          "accountType"
+        ).value,
+
+      openingBalance:
+        document.getElementById(
+          "accountOpeningBalance"
+        ).value
+
+    };
+
+
+    if (!data.name) {
+
+      showManagementError(
+        "Please enter account name."
+      );
+
+      return;
+
+    }
+
+
+    showLoading();
+
+
+    const action =
+      managementEditId
+        ? "updateAccount"
+        : "addAccount";
+
+
+    google.script.run
+
+      .withSuccessHandler(function() {
+
+        closeManagementModal();
+
+        reloadData();
+
+      })
+
+      .withFailureHandler(function(error) {
+
+        hideLoading();
+
+        showManagementError(
+          error.message
+        );
+
+      })[action](data);
+
+
+    return;
+
+  }
+
+
+  if (managementMode === "category") {
+
+    data = {
+
+      id:
+        document.getElementById(
+          "managementId"
+        ).value,
+
+      name:
+        document.getElementById(
+          "categoryName"
+        ).value.trim(),
+
+      type:
+        document.getElementById(
+          "categoryType"
+        ).value,
+
+      budgetGroup:
+        document.getElementById(
+          "categoryBudgetGroup"
+        ).value.trim()
+
+    };
+
+
+    if (!data.name) {
+
+      showManagementError(
+        "Please enter category name."
+      );
+
+      return;
+
+    }
+
+
+    showLoading();
+
+
+    const action =
+      managementEditId
+        ? "updateCategory"
+        : "addCategory";
+
+
+    google.script.run
+
+      .withSuccessHandler(function() {
+
+        closeManagementModal();
+
+        reloadData();
+
+      })
+
+      .withFailureHandler(function(error) {
+
+        hideLoading();
+
+        showManagementError(
+          error.message
+        );
+
+      })[action](data);
+
+
+    return;
+
+  }
+
+
+  if (managementMode === "budget") {
+
+    data = {
+
+      id:
+        document.getElementById(
+          "managementId"
+        ).value,
+
+      category:
+        document.getElementById(
+          "budgetCategory"
+        ).value.trim(),
+
+      monthlyBudget:
+        document.getElementById(
+          "budgetAmount"
+        ).value,
+
+      remarks:
+        document.getElementById(
+          "budgetRemarks"
+        ).value.trim()
+
+    };
+
+
+    if (!data.category) {
+
+      showManagementError(
+        "Please enter budget category."
+      );
+
+      return;
+
+    }
+
+
+    showLoading();
+
+
+    const action =
+      managementEditId
+        ? "updateBudget"
+        : "addBudget";
+
+
+    google.script.run
+
+      .withSuccessHandler(function() {
+
+        closeManagementModal();
+
+        reloadData();
+
+      })
+
+      .withFailureHandler(function(error) {
+
+        hideLoading();
+
+        showManagementError(
+          error.message
+        );
+
+      })[action](data);
+
+
+  }
+
+}
+
+
+/* =========================================
+   DELETE ACCOUNT
+========================================= */
+
+function deleteAccount(id) {
+
+  if (!confirm(
+    "Delete this account?"
+  )) {
+
+    return;
+
+  }
+
+
+  showLoading();
+
+
+  google.script.run
+
+    .withSuccessHandler(function() {
+
+      reloadData();
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      hideLoading();
+
+      alert(error.message);
+
+    })
+
+    .deleteAccount(id);
+
+}
+
+
+/* =========================================
+   DELETE CATEGORY
+========================================= */
+
+function deleteCategory(id) {
+
+  if (!confirm(
+    "Delete this category?"
+  )) {
+
+    return;
+
+  }
+
+
+  showLoading();
+
+
+  google.script.run
+
+    .withSuccessHandler(function() {
+
+      reloadData();
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      hideLoading();
+
+      alert(error.message);
+
+    })
+
+    .deleteCategory(id);
+
+}
+
+
+/* =========================================
+   DELETE BUDGET
+========================================= */
+
+function deleteBudget(id) {
+
+  if (!confirm(
+    "Delete this budget?"
+  )) {
+
+    return;
+
+  }
+
+
+  showLoading();
+
+
+  google.script.run
+
+    .withSuccessHandler(function() {
+
+      reloadData();
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      hideLoading();
+
+      alert(error.message);
+
+    })
+
+    .deleteBudget(id);
+
+}
+
+
+/* =========================================
+   MANAGEMENT ERROR
+========================================= */
+
+function showManagementError(message) {
+
+  const box =
+    document.getElementById(
+      "managementError"
+    );
+
+  box.textContent = message;
+
+  box.classList.remove("hidden");
+
+}
+
+
+function hideManagementError() {
+
+  document.getElementById(
+    "managementError"
+  ).classList.add("hidden");
+
+}
+
+</script>
