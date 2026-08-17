@@ -19,13 +19,12 @@ const SHEETS = {
 function doGet() {
 
   return HtmlService
-    .createTemplateFromFile("Index")
+    .createTemplateFromFile("index")
     .evaluate()
     .setTitle("Money Hub")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 
 }
-
 
 /* =========================================
    INCLUDE FILES

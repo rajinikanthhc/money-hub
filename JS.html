@@ -41,7 +41,9 @@ window.onload = function () {
 
       renderTransactions();
 
-      renderAccounts();
+updateSummary();
+
+renderAccounts();
 
       renderCategories();
 
@@ -165,6 +167,81 @@ function renderTransactions() {
     body.appendChild(row);
 
   });
+
+}
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+function updateSummary() {
+
+  let openingBalance = 0;
+
+  accounts.forEach(function (account) {
+
+    openingBalance +=
+      Number(account.openingBalance) || 0;
+
+  });
+
+
+  let income = 0;
+
+  let expense = 0;
+
+
+  transactions.forEach(function (transaction) {
+
+    const amount =
+      Number(transaction.amount) || 0;
+
+
+    if (transaction.type === "Income") {
+
+      income += amount;
+
+    }
+
+    else if (transaction.type === "Expense") {
+
+      expense += amount;
+
+    }
+
+  });
+
+
+  const savings =
+    income - expense;
+
+
+  const totalBalance =
+    openingBalance + savings;
+
+
+  document.getElementById(
+    "totalBalance"
+  ).textContent =
+    "₹" + formatAmount(totalBalance);
+
+
+  document.getElementById(
+    "totalIncome"
+  ).textContent =
+    "₹" + formatAmount(income);
+
+
+  document.getElementById(
+    "totalExpense"
+  ).textContent =
+    "₹" + formatAmount(expense);
+
+
+  document.getElementById(
+    "totalSavings"
+  ).textContent =
+    "₹" + formatAmount(savings);
 
 }
 
@@ -1129,11 +1206,13 @@ function reloadData() {
 
       renderTransactions();
 
-      renderAccounts();
+updateSummary();
 
-      renderCategories();
+renderAccounts();
 
-      renderBudgets();
+renderCategories();
+
+renderBudgets();
 
       hideLoading();
 
@@ -1156,21 +1235,98 @@ function reloadData() {
    ACCOUNTS PAGE
 ========================================= */
 
-/* =========================================
-   ACCOUNTS PAGE
-========================================= */
-
 function renderAccounts() {
 
   const body =
-    document.getElementById(
-      "accountsBody"
-    );
+    document.getElementById("accountsBody");
+
+  const footer =
+    document.getElementById("accountsFooter");
 
   body.innerHTML = "";
+  footer.innerHTML = "";
+
+
+  let totalOpeningBalance = 0;
+  let totalCurrentBalance = 0;
 
 
   accounts.forEach(function (a) {
+
+    const openingBalance =
+      Number(a.openingBalance) || 0;
+
+
+    /* =====================================
+       CURRENT BALANCE
+    ===================================== */
+
+    let currentBalance =
+      openingBalance;
+
+
+    transactions.forEach(function (t) {
+
+      const amount =
+        Number(t.amount) || 0;
+
+
+      /* Income received into this account */
+
+      if (
+        t.type === "Income" &&
+        String(t.toAccount) === String(a.name)
+      ) {
+
+        currentBalance += amount;
+
+      }
+
+
+      /* Expense paid from this account */
+
+      if (
+        t.type === "Expense" &&
+        String(t.fromAccount) === String(a.name)
+      ) {
+
+        currentBalance -= amount;
+
+      }
+
+
+      /* Transfer received */
+
+      if (
+        t.type === "Transfer" &&
+        String(t.toAccount) === String(a.name)
+      ) {
+
+        currentBalance += amount;
+
+      }
+
+
+      /* Transfer sent */
+
+      if (
+        t.type === "Transfer" &&
+        String(t.fromAccount) === String(a.name)
+      ) {
+
+        currentBalance -= amount;
+
+      }
+
+    });
+
+
+    totalOpeningBalance +=
+      openingBalance;
+
+    totalCurrentBalance +=
+      currentBalance;
+
 
     body.innerHTML += `
 
@@ -1189,7 +1345,11 @@ function renderAccounts() {
         </td>
 
         <td>
-          ₹${formatAmount(a.openingBalance)}
+          ₹${formatAmount(openingBalance)}
+        </td>
+
+        <td style="font-weight:600">
+          ₹${formatAmount(currentBalance)}
         </td>
 
         <td>
@@ -1222,6 +1382,34 @@ function renderAccounts() {
 
   });
 
+
+  /* =====================================
+     TOTAL ROW
+  ===================================== */
+
+  footer.innerHTML = `
+
+    <tr>
+
+      <td colspan="3"></td>
+      
+     <td style="font-weight:700; font-size:18px">
+
+  ₹${formatAmount(totalOpeningBalance)}
+
+</td>
+
+<td style="font-weight:700; font-size:18px">
+
+  ₹${formatAmount(totalCurrentBalance)}
+
+</td>
+      <td></td>
+
+    </tr>
+
+  `;
+
 }
 
 /* =========================================
@@ -1239,14 +1427,81 @@ function renderAccounts() {
 function renderCategories() {
 
   const body =
-    document.getElementById(
-      "categoriesBody"
-    );
+    document.getElementById("categoriesBody");
 
   body.innerHTML = "";
 
 
+  /* =====================================
+     CURRENT MONTH
+  ====================================== */
+
+  const today = new Date();
+
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+
+  /* =====================================
+     CATEGORY ROWS
+  ====================================== */
+
   categories.forEach(function (c) {
+
+    let categoryTotal = 0;
+
+
+    transactions.forEach(function (t) {
+
+      /* Match transaction type with
+         category type */
+
+      if (
+        String(t.type).trim().toLowerCase() !==
+        String(c.type).trim().toLowerCase()
+      ) {
+        return;
+      }
+
+
+      /* Match category */
+
+      if (
+        String(t.category).trim().toLowerCase() !==
+        String(c.name).trim().toLowerCase()
+      ) {
+        return;
+      }
+
+
+      /* Check current month */
+
+      const transactionDate =
+        new Date(t.date);
+
+      if (
+        isNaN(transactionDate.getTime())
+      ) {
+        return;
+      }
+
+
+      if (
+        transactionDate.getMonth() === currentMonth &&
+        transactionDate.getFullYear() === currentYear
+      ) {
+
+        categoryTotal +=
+          Number(t.amount) || 0;
+
+      }
+
+    });
+
+
+    /* =================================
+       ADD ROW
+    ================================= */
 
     body.innerHTML += `
 
@@ -1266,6 +1521,10 @@ function renderCategories() {
 
         <td>
           ${escapeHtml(c.budgetGroup)}
+        </td>
+
+        <td style="font-weight:600">
+          ₹${formatAmount(categoryTotal)}
         </td>
 
         <td>
@@ -1304,21 +1563,84 @@ function renderCategories() {
    BUDGET PAGE
 ========================================= */
 
-/* =========================================
-   BUDGET PAGE
-========================================= */
-
 function renderBudgets() {
 
   const body =
-    document.getElementById(
-      "budgetBody"
-    );
+    document.getElementById("budgetBody");
+
+  const footer =
+    document.getElementById("budgetFooter");
 
   body.innerHTML = "";
+  footer.innerHTML = "";
+
+
+  let totalBudget = 0;
+  let totalUtilised = 0;
+  let totalRemaining = 0;
 
 
   budgets.forEach(function (b) {
+
+    const monthlyBudget =
+      Number(b.monthlyBudget) || 0;
+
+
+    /* =====================================
+       CALCULATE UTILISED
+       Based on Expense transactions
+       matching the Budget Group
+    ===================================== */
+
+    let utilised = 0;
+
+
+    transactions.forEach(function (t) {
+
+      if (t.type !== "Expense") {
+        return;
+      }
+
+
+      const category =
+        categories.find(function (c) {
+
+          return String(c.name).trim().toLowerCase() ===
+                 String(t.category).trim().toLowerCase();
+
+        });
+
+
+      if (!category) {
+        return;
+      }
+
+
+      if (
+        String(category.budgetGroup)
+          .trim()
+          .toLowerCase() ===
+        String(b.category)
+          .trim()
+          .toLowerCase()
+      ) {
+
+        utilised +=
+          Number(t.amount) || 0;
+
+      }
+
+    });
+
+
+    const remaining =
+      monthlyBudget - utilised;
+
+
+    totalBudget += monthlyBudget;
+    totalUtilised += utilised;
+    totalRemaining += remaining;
+
 
     body.innerHTML += `
 
@@ -1333,7 +1655,19 @@ function renderBudgets() {
         </td>
 
         <td>
-          ₹${formatAmount(b.monthlyBudget)}
+          ₹${formatAmount(monthlyBudget)}
+        </td>
+
+        <td class="budgetUtilised">
+          ₹${formatAmount(utilised)}
+        </td>
+
+        <td class="${
+          remaining < 0
+            ? "budgetRemainingOver"
+            : "budgetRemaining"
+        }">
+          ₹${formatAmount(remaining)}
         </td>
 
         <td>
@@ -1369,6 +1703,39 @@ function renderBudgets() {
     `;
 
   });
+
+
+  /* =====================================
+     TOTAL ROW
+  ===================================== */
+
+  footer.innerHTML = `
+
+    <tr class="budgetTotalRow">
+
+      <td></td>
+
+      <td></td>
+
+      <td>
+        ₹${formatAmount(totalBudget)}
+      </td>
+
+      <td class="budgetUtilised totalNumber">
+        ₹${formatAmount(totalUtilised)}
+      </td>
+
+      <td class="budgetRemaining totalNumber">
+        ₹${formatAmount(totalRemaining)}
+      </td>
+
+      <td></td>
+
+      <td></td>
+
+    </tr>
+
+  `;
 
 }
 
@@ -2454,6 +2821,15 @@ function hideManagementError() {
   document.getElementById(
     "managementError"
   ).classList.add("hidden");
+
+}
+
+function openSheet() {
+
+  window.open(
+    "https://docs.google.com/spreadsheets/d/1IK0fyzoe5GnaPcYQ92dTNChpDSwlN8i951scM9W92TM/edit?gid=1138076182#gid=1138076182",
+    "_blank"
+  );
 
 }
 

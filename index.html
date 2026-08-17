@@ -82,6 +82,14 @@
 
       </button>
 
+      <button
+  class="navButton"
+  onclick="openSheet()">
+
+  📊 Sheet
+
+</button>
+
     </div>
 
   </header>
@@ -104,12 +112,35 @@
       class="page">
 
 
-      <div class="pageHeader">
+<div class="pageHeader transactionHeader">
 
-        <h1>Transactions</h1>
+  <h1>Transactions</h1>
 
+  <div class="summaryCards">
 
-        <div class="searchWrapper">
+    <div class="summaryCard">
+      <div class="summaryTitle">Total Balance</div>
+      <div class="summaryValue" id="totalBalance">₹0</div>
+    </div>
+
+    <div class="summaryCard">
+      <div class="summaryTitle">Income</div>
+      <div class="summaryValue incomeSummary" id="totalIncome">₹0</div>
+    </div>
+
+    <div class="summaryCard">
+      <div class="summaryTitle">Expense</div>
+      <div class="summaryValue expenseSummary" id="totalExpense">₹0</div>
+    </div>
+
+    <div class="summaryCard">
+      <div class="summaryTitle">Savings</div>
+      <div class="summaryValue savingsSummary" id="totalSavings">₹0</div>
+    </div>
+
+  </div>
+
+  <div class="searchWrapper">
 
           <input
             type="text"
@@ -211,15 +242,11 @@
             <tr>
 
               <th>ID</th>
-
-              <th>Account</th>
-
-              <th>Type</th>
-
-              <th>Opening Balance</th>
-
-              <th>Action</th>
-
+<th>Account</th>
+<th>Type</th>
+<th>Opening Balance</th>
+<th>Current Balance</th>
+<th>Action</th>
             </tr>
 
           </thead>
@@ -228,6 +255,8 @@
           <tbody id="accountsBody">
 
           </tbody>
+
+          <tfoot id="accountsFooter"></tfoot>
 
         </table>
 
@@ -273,15 +302,11 @@
             <tr>
 
               <th>ID</th>
-
-              <th>Category</th>
-
-              <th>Type</th>
-
-              <th>Budget Group</th>
-
-              <th>Action</th>
-
+<th>Category</th>
+<th>Type</th>
+<th>Budget Group</th>
+<th>Total</th>
+<th>Action</th>
             </tr>
 
           </thead>
@@ -330,30 +355,31 @@
 
         <table>
 
-          <thead>
+  <thead>
 
-            <tr>
+    <tr>
 
-              <th>ID</th>
+      <th>ID</th>
+      <th>Category</th>
+      <th>Monthly Budget</th>
+      <th>Utilised</th>
+      <th>Remaining</th>
+      <th>Remarks</th>
+      <th>Action</th>
 
-              <th>Category</th>
+    </tr>
 
-              <th>Monthly Budget</th>
+  </thead>
 
-              <th>Remarks</th>
+  <tbody id="budgetBody">
 
-              <th>Action</th>
+  </tbody>
 
-            </tr>
+  <tfoot id="budgetFooter">
 
-          </thead>
+  </tfoot>
 
-
-          <tbody id="budgetBody">
-
-          </tbody>
-
-        </table>
+</table>
 
       </div>
 
