@@ -895,9 +895,9 @@ function deleteTransaction(id) {
     );
 
 
-  if (!confirmed) {
-    return;
-  }
+  if (!verifyDeletePassword()) {
+  return;
+}
 
 
   showLoading();
@@ -972,6 +972,10 @@ function reloadData() {
    ACCOUNTS PAGE
 ========================================= */
 
+/* =========================================
+   ACCOUNTS PAGE
+========================================= */
+
 function renderAccounts() {
 
   const body =
@@ -988,14 +992,44 @@ function renderAccounts() {
 
       <tr>
 
-        <td>${escapeHtml(a.id)}</td>
+        <td>
+          ${escapeHtml(a.id)}
+        </td>
 
-        <td>${escapeHtml(a.name)}</td>
+        <td>
+          ${escapeHtml(a.name)}
+        </td>
 
-        <td>${escapeHtml(a.type)}</td>
+        <td>
+          ${escapeHtml(a.type)}
+        </td>
 
         <td>
           ₹${formatAmount(a.openingBalance)}
+        </td>
+
+        <td>
+
+          <div class="actionButtons">
+
+            <button
+              class="editButton"
+              onclick="editAccount('${a.id}')">
+
+              Edit
+
+            </button>
+
+            <button
+              class="deleteButton"
+              onclick="deleteAccount('${a.id}')">
+
+              Delete
+
+            </button>
+
+          </div>
+
         </td>
 
       </tr>
@@ -1006,6 +1040,13 @@ function renderAccounts() {
 
 }
 
+/* =========================================
+   CATEGORIES PAGE
+========================================= */
+
+/* =========================================
+   CATEGORIES PAGE
+========================================= */
 
 /* =========================================
    CATEGORIES PAGE
@@ -1027,13 +1068,45 @@ function renderCategories() {
 
       <tr>
 
-        <td>${escapeHtml(c.id)}</td>
+        <td>
+          ${escapeHtml(c.id)}
+        </td>
 
-        <td>${escapeHtml(c.name)}</td>
+        <td>
+          ${escapeHtml(c.name)}
+        </td>
 
-        <td>${escapeHtml(c.type)}</td>
+        <td>
+          ${escapeHtml(c.type)}
+        </td>
 
-        <td>${escapeHtml(c.budgetGroup)}</td>
+        <td>
+          ${escapeHtml(c.budgetGroup)}
+        </td>
+
+        <td>
+
+          <div class="actionButtons">
+
+            <button
+              class="editButton"
+              onclick="editCategory('${c.id}')">
+
+              Edit
+
+            </button>
+
+            <button
+              class="deleteButton"
+              onclick="deleteCategory('${c.id}')">
+
+              Delete
+
+            </button>
+
+          </div>
+
+        </td>
 
       </tr>
 
@@ -1043,6 +1116,9 @@ function renderCategories() {
 
 }
 
+/* =========================================
+   BUDGET PAGE
+========================================= */
 
 /* =========================================
    BUDGET PAGE
@@ -1064,15 +1140,45 @@ function renderBudgets() {
 
       <tr>
 
-        <td>${escapeHtml(b.id)}</td>
+        <td>
+          ${escapeHtml(b.id)}
+        </td>
 
-        <td>${escapeHtml(b.category)}</td>
+        <td>
+          ${escapeHtml(b.category)}
+        </td>
 
         <td>
           ₹${formatAmount(b.monthlyBudget)}
         </td>
 
-        <td>${escapeHtml(b.remarks)}</td>
+        <td>
+          ${escapeHtml(b.remarks)}
+        </td>
+
+        <td>
+
+          <div class="actionButtons">
+
+            <button
+              class="editButton"
+              onclick="editBudget('${b.id}')">
+
+              Edit
+
+            </button>
+
+            <button
+              class="deleteButton"
+              onclick="deleteBudget('${b.id}')">
+
+              Delete
+
+            </button>
+
+          </div>
+
+        </td>
 
       </tr>
 
@@ -1081,7 +1187,6 @@ function renderBudgets() {
   });
 
 }
-
 
 /* =========================================
    PAGE NAVIGATION
@@ -1897,6 +2002,30 @@ function saveManagementData() {
 
 }
 
+/* =========================================
+   DELETE PASSWORD
+========================================= */
+
+function verifyDeletePassword() {
+
+  const password =
+    prompt("Enter password to delete:");
+
+  if (password === null) {
+    return false;
+  }
+
+  if (password !== "12345") {
+
+    alert("Incorrect password.");
+
+    return false;
+
+  }
+
+  return true;
+
+}
 
 /* =========================================
    DELETE ACCOUNT
@@ -1905,12 +2034,18 @@ function saveManagementData() {
 function deleteAccount(id) {
 
   if (!confirm(
-    "Delete this account?"
-  )) {
+  "Delete this account?"
+)) {
 
-    return;
+  return;
 
-  }
+}
+
+if (!verifyDeletePassword()) {
+
+  return;
+
+}
 
 
   showLoading();
@@ -1944,12 +2079,18 @@ function deleteAccount(id) {
 function deleteCategory(id) {
 
   if (!confirm(
-    "Delete this category?"
-  )) {
+  "Delete this category?"
+)) {
 
-    return;
+  return;
 
-  }
+}
+
+if (!verifyDeletePassword()) {
+
+  return;
+
+}
 
 
   showLoading();
@@ -1983,12 +2124,18 @@ function deleteCategory(id) {
 function deleteBudget(id) {
 
   if (!confirm(
-    "Delete this budget?"
-  )) {
+  "Delete this budget?"
+)) {
 
-    return;
+  return;
 
-  }
+}
+
+if (!verifyDeletePassword()) {
+
+  return;
+
+}
 
 
   showLoading();
