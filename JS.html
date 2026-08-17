@@ -641,6 +641,10 @@ function transactionTypeChanged() {
    SAVE TRANSACTION
 ========================================= */
 
+/* =========================================
+   SAVE TRANSACTION
+========================================= */
+
 function saveTransaction() {
 
   hideFormError();
@@ -691,6 +695,10 @@ function saveTransaction() {
   };
 
 
+  /* =========================================
+     BASIC VALIDATION
+  ========================================= */
+
   if (!data.date) {
 
     showFormError(
@@ -713,8 +721,10 @@ function saveTransaction() {
   }
 
 
-  if (!data.amount ||
-      Number(data.amount) <= 0) {
+  if (
+    !data.amount ||
+    Number(data.amount) <= 0
+  ) {
 
     showFormError(
       "Please enter a valid amount."
@@ -724,6 +734,177 @@ function saveTransaction() {
 
   }
 
+
+  /* =========================================
+     EXPENSE VALIDATION
+  ========================================= */
+
+  if (data.type === "Expense") {
+
+    if (!data.category) {
+
+      showFormError(
+        "Please select a category."
+      );
+
+      return;
+
+    }
+
+
+    if (!data.fromAccount) {
+
+      showFormError(
+        "Please select From Account."
+      );
+
+      return;
+
+    }
+
+
+    // Expense should not have To Account
+    data.toAccount = "";
+
+  }
+
+
+  /* =========================================
+     INCOME VALIDATION
+  ========================================= */
+
+  if (data.type === "Income") {
+
+    if (!data.category) {
+
+      showFormError(
+        "Please select a category."
+      );
+
+      return;
+
+    }
+
+
+    if (!data.toAccount) {
+
+      showFormError(
+        "Please select To Account."
+      );
+
+      return;
+
+    }
+
+
+    // Income should not have From Account
+    data.fromAccount = "";
+
+  }
+
+
+  /* =========================================
+     TRANSFER VALIDATION
+  ========================================= */
+
+  if (data.type === "Transfer") {
+
+    if (!data.fromAccount) {
+
+      showFormError(
+        "Please select From Account."
+      );
+
+      return;
+
+    }
+
+
+    if (!data.toAccount) {
+
+      showFormError(
+        "Please select To Account."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      data.fromAccount ===
+      data.toAccount
+    ) {
+
+      showFormError(
+        "From Account and To Account cannot be the same."
+      );
+
+      return;
+
+    }
+
+
+    // Transfer should not have category
+    data.category = "";
+
+  }
+
+
+  /* =========================================
+     CATEGORY TYPE VALIDATION
+  ========================================= */
+
+  if (
+    data.category &&
+    data.type !== "Transfer"
+  ) {
+
+    const selectedCategory =
+      categories.find(function (c) {
+
+        return (
+          String(c.name)
+            .trim()
+            .toLowerCase() ===
+          String(data.category)
+            .trim()
+            .toLowerCase()
+        );
+
+      });
+
+
+    if (!selectedCategory) {
+
+      showFormError(
+        "Selected category is not valid."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      selectedCategory.type !==
+      data.type
+    ) {
+
+      showFormError(
+        "Category does not match transaction type."
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  /* =========================================
+     SAVE
+  ========================================= */
 
   showLoading();
 
@@ -744,7 +925,9 @@ function saveTransaction() {
 
         hideLoading();
 
-        showFormError(error.message);
+        showFormError(
+          error.message
+        );
 
       })
 
@@ -768,7 +951,9 @@ function saveTransaction() {
 
         hideLoading();
 
-        showFormError(error.message);
+        showFormError(
+          error.message
+        );
 
       })
 
@@ -777,7 +962,6 @@ function saveTransaction() {
   }
 
 }
-
 
 /* =========================================
    EDIT
@@ -1771,6 +1955,40 @@ function editBudget(id) {
 
 }
 
+/* =========================================
+   DUPLICATE CHECK
+========================================= */
+
+function isDuplicateName(value, list, field, currentId) {
+
+  const name =
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  if (!name) {
+    return false;
+  }
+
+  return list.some(function (item) {
+
+    // Ignore the current record while editing
+    if (
+      currentId &&
+      String(item.id) === String(currentId)
+    ) {
+      return false;
+    }
+
+    return (
+      String(item[field] || "")
+        .trim()
+        .toLowerCase() === name
+    );
+
+  });
+
+}
 
 /* =========================================
    SAVE MANAGEMENT DATA
@@ -1820,6 +2038,23 @@ function saveManagementData() {
       return;
 
     }
+
+    if (
+  isDuplicateName(
+    data.name,
+    accounts,
+    "name",
+    managementEditId
+  )
+) {
+
+  showManagementError(
+    "Account already exists."
+  );
+
+  return;
+
+}
 
 
     showLoading();
@@ -1894,6 +2129,23 @@ function saveManagementData() {
 
     }
 
+    if (
+  isDuplicateName(
+    data.name,
+    categories,
+    "name",
+    managementEditId
+  )
+) {
+
+  showManagementError(
+    "Category already exists."
+  );
+
+  return;
+
+}
+
 
     showLoading();
 
@@ -1966,6 +2218,23 @@ function saveManagementData() {
       return;
 
     }
+
+    if (
+  isDuplicateName(
+    data.category,
+    budgets,
+    "category",
+    managementEditId
+  )
+) {
+
+  showManagementError(
+    "Budget already exists."
+  );
+
+  return;
+
+}
 
 
     showLoading();
