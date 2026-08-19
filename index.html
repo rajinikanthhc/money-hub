@@ -236,6 +236,60 @@
 
 </section>
 
+<!-- =====================================
+     DASHBOARD TRANSACTION POPUP
+===================================== -->
+
+<div
+  id="dashboardTransactionModal"
+  class="modalOverlay hidden">
+
+  <div class="modal dashboardTransactionModal">
+
+    <div class="modalHeader">
+
+      <h2 id="dashboardPopupTitle">
+        Transactions
+      </h2>
+
+      <button
+        class="closeButton"
+        onclick="closeDashboardPopup()">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <div class="modalBody">
+
+      <div
+        id="dashboardPopupBody"
+        class="dashboardPopupBody">
+
+      </div>
+
+    </div>
+
+
+    <div class="modalFooter">
+
+      <button
+        class="cancelButton"
+        onclick="closeDashboardPopup()">
+
+        Close
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
     <!-- =====================================
          TRANSACTIONS PAGE
     ====================================== -->

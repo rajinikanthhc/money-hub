@@ -199,7 +199,6 @@ function populateDashboardMonths() {
 
 }
 
-
 /* =========================================
    DAILY SPENDING CHART
 ========================================= */
@@ -209,18 +208,14 @@ function renderDashboard() {
   const select =
     document.getElementById("chartMonth");
 
-
   if (!select) {
     return;
   }
 
-
   const selectedMonth =
     select.value;
 
-
   const days = {};
-
 
   transactions.forEach(function (t) {
 
@@ -228,29 +223,23 @@ function renderDashboard() {
       return;
     }
 
-
     const parts =
       String(t.date).split("-");
-
 
     if (parts.length !== 3) {
       return;
     }
 
-
     const key =
       parts[0] + "-" +
       parts[1];
-
 
     if (key !== selectedMonth) {
       return;
     }
 
-
     const day =
       Number(parts[2]);
-
 
     days[day] =
       (days[day] || 0) +
@@ -264,7 +253,6 @@ function renderDashboard() {
       "dailySpendingChart"
     );
 
-
   container.innerHTML = "";
 
 
@@ -277,7 +265,6 @@ function renderDashboard() {
 
   const parts =
     selectedMonth.split("-");
-
 
   const year =
     Number(parts[0]);
@@ -293,6 +280,10 @@ function renderDashboard() {
       0
     ).getDate();
 
+
+  /* =====================================
+     CREATE DAILY BARS
+  ====================================== */
 
   for (
     let day = 1;
@@ -326,16 +317,23 @@ function renderDashboard() {
         class="chartAmount"
         title="Day ${day}: ₹${formatAmount(amount)}">
 
-        ${amount > 0
-          ? "₹" + formatAmount(amount)
-          : ""}
+        ${
+          amount > 0
+            ? "₹" + formatAmount(amount)
+            : ""
+        }
 
       </div>
 
       <div
-        class="chartBar"
+        class="chartBar ${
+          amount > 0
+            ? "clickableChartBar"
+            : ""
+        }"
         style="height:${height}%"
         title="Day ${day}: ₹${formatAmount(amount)}">
+
       </div>
 
       <div class="chartDay">
@@ -345,6 +343,25 @@ function renderDashboard() {
     `;
 
 
+    /* =================================
+       CLICK BAR
+    ================================= */
+
+    if (amount > 0) {
+
+      barWrapper.onclick =
+        function() {
+
+          openDashboardDayTransactions(
+            selectedMonth,
+            day
+          );
+
+        };
+
+    }
+
+
     container.appendChild(
       barWrapper
     );
@@ -352,7 +369,6 @@ function renderDashboard() {
   }
 
 }
-
 
 /* =========================================
    MONTHLY SUMMARY
@@ -441,6 +457,464 @@ function renderDashboardSummary() {
     "dashboardSavings"
   ).textContent =
     "₹" + formatAmount(savings);
+
+}
+
+/* =====================================
+   SUMMARY CARD CLICK EVENTS
+===================================== */
+
+document.getElementById(
+  "dashboardIncome"
+).onclick = function() {
+
+  const month =
+    document.getElementById(
+      "summaryMonth"
+    ).value;
+
+  openDashboardMonthlyTransactions(
+    month,
+    "Income"
+  );
+
+};
+
+
+document.getElementById(
+  "dashboardExpense"
+).onclick = function() {
+
+  const month =
+    document.getElementById(
+      "summaryMonth"
+    ).value;
+
+  openDashboardMonthlyTransactions(
+    month,
+    "Expense"
+  );
+
+};
+
+
+document.getElementById(
+  "dashboardSavings"
+).onclick = function() {
+
+  const month =
+    document.getElementById(
+      "summaryMonth"
+    ).value;
+
+  openDashboardSavings(
+    month
+  );
+
+};
+
+/* =========================================
+   DASHBOARD POPUP
+========================================= */
+
+
+/* =========================================
+   DAY TRANSACTIONS
+========================================= */
+
+function openDashboardDayTransactions(
+  selectedMonth,
+  day
+) {
+
+  const parts =
+    selectedMonth.split("-");
+
+  const year =
+    parts[0];
+
+  const month =
+    parts[1];
+
+
+  const dayText =
+    String(day).padStart(2, "0");
+
+
+  const selectedDate =
+    year + "-" +
+    month + "-" +
+    dayText;
+
+
+  const dayTransactions =
+    transactions.filter(function(t) {
+
+      return (
+        t.type === "Expense" &&
+        String(t.date) === selectedDate
+      );
+
+    });
+
+
+  const dateObject =
+    new Date(
+      Number(year),
+      Number(month) - 1,
+      day
+    );
+
+
+  const dateLabel =
+    dateObject.toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }
+    );
+
+
+  showDashboardTransactionPopup(
+    "Expenses - " + dateLabel,
+    dayTransactions
+  );
+
+}
+
+
+/* =========================================
+   MONTHLY INCOME / EXPENSE
+========================================= */
+
+function openDashboardMonthlyTransactions(
+  selectedMonth,
+  type
+) {
+
+  const monthlyTransactions =
+    transactions.filter(function(t) {
+
+      const parts =
+        String(t.date).split("-");
+
+      if (parts.length !== 3) {
+        return false;
+      }
+
+
+      const key =
+        parts[0] + "-" +
+        parts[1];
+
+
+      return (
+        key === selectedMonth &&
+        t.type === type
+      );
+
+    });
+
+
+  const parts =
+    selectedMonth.split("-");
+
+
+  const dateObject =
+    new Date(
+      Number(parts[0]),
+      Number(parts[1]) - 1,
+      1
+    );
+
+
+  const monthLabel =
+    dateObject.toLocaleString(
+      "en-IN",
+      {
+        month: "long",
+        year: "numeric"
+      }
+    );
+
+
+  showDashboardTransactionPopup(
+    type + " - " + monthLabel,
+    monthlyTransactions
+  );
+
+}
+
+
+/* =========================================
+   SAVINGS POPUP
+========================================= */
+
+function openDashboardSavings(
+  selectedMonth
+) {
+
+  const monthlyTransactions =
+    transactions.filter(function(t) {
+
+      const parts =
+        String(t.date).split("-");
+
+      if (parts.length !== 3) {
+        return false;
+      }
+
+
+      const key =
+        parts[0] + "-" +
+        parts[1];
+
+
+      return (
+        key === selectedMonth &&
+        (
+          t.type === "Income" ||
+          t.type === "Expense"
+        )
+      );
+
+    });
+
+
+  const parts =
+    selectedMonth.split("-");
+
+
+  const dateObject =
+    new Date(
+      Number(parts[0]),
+      Number(parts[1]) - 1,
+      1
+    );
+
+
+  const monthLabel =
+    dateObject.toLocaleString(
+      "en-IN",
+      {
+        month: "long",
+        year: "numeric"
+      }
+    );
+
+
+  showDashboardSavingsPopup(
+    monthLabel,
+    monthlyTransactions
+  );
+
+}
+
+
+/* =========================================
+   TRANSACTION POPUP
+========================================= */
+
+function showDashboardTransactionPopup(
+  title,
+  list
+) {
+
+  document.getElementById(
+    "dashboardPopupTitle"
+  ).textContent = title;
+
+
+  const body =
+    document.getElementById(
+      "dashboardPopupBody"
+    );
+
+
+  body.innerHTML = "";
+
+
+  if (list.length === 0) {
+
+    body.innerHTML = `
+
+      <div class="dashboardNoTransactions">
+
+        No transactions found.
+
+      </div>
+
+    `;
+
+  } else {
+
+    let total = 0;
+
+
+    list.forEach(function(t) {
+
+      total +=
+        Number(t.amount) || 0;
+
+
+      body.innerHTML += `
+
+        <div class="dashboardTransactionRow">
+
+          <div>
+
+            <div class="dashboardTransactionCategory">
+              ${escapeHtml(t.category || "-")}
+            </div>
+
+            <div class="dashboardTransactionDescription">
+              ${escapeHtml(t.description || "-")}
+            </div>
+
+          </div>
+
+          <div class="dashboardTransactionAmount">
+            ₹${formatAmount(t.amount)}
+          </div>
+
+        </div>
+
+      `;
+
+    });
+
+
+    body.innerHTML += `
+
+      <div class="dashboardPopupTotal">
+
+        <span>Total</span>
+
+        <span>
+          ₹${formatAmount(total)}
+        </span>
+
+      </div>
+
+    `;
+
+  }
+
+
+  document.getElementById(
+    "dashboardTransactionModal"
+  ).classList.remove("hidden");
+
+}
+
+
+/* =========================================
+   SAVINGS POPUP
+========================================= */
+
+function showDashboardSavingsPopup(
+  monthLabel,
+  list
+) {
+
+  let income = 0;
+
+  let expense = 0;
+
+
+  list.forEach(function(t) {
+
+    const amount =
+      Number(t.amount) || 0;
+
+
+    if (t.type === "Income") {
+      income += amount;
+    }
+
+
+    if (t.type === "Expense") {
+      expense += amount;
+    }
+
+  });
+
+
+  const savings =
+    income - expense;
+
+
+  document.getElementById(
+    "dashboardPopupTitle"
+  ).textContent =
+    "Savings - " + monthLabel;
+
+
+  const body =
+    document.getElementById(
+      "dashboardPopupBody"
+    );
+
+
+  body.innerHTML = `
+
+    <div class="dashboardSavingsPopup">
+
+      <div class="dashboardSavingsLine">
+
+        <span>Income</span>
+
+        <strong class="incomeSummary">
+          ₹${formatAmount(income)}
+        </strong>
+
+      </div>
+
+
+      <div class="dashboardSavingsLine">
+
+        <span>Expense</span>
+
+        <strong class="expenseSummary">
+          ₹${formatAmount(expense)}
+        </strong>
+
+      </div>
+
+
+      <div class="dashboardSavingsLine savingsFinal">
+
+        <span>Savings</span>
+
+        <strong class="savingsSummary">
+          ₹${formatAmount(savings)}
+        </strong>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  document.getElementById(
+    "dashboardTransactionModal"
+  ).classList.remove("hidden");
+
+}
+
+
+/* =========================================
+   CLOSE POPUP
+========================================= */
+
+function closeDashboardPopup() {
+
+  document.getElementById(
+    "dashboardTransactionModal"
+  ).classList.add("hidden");
 
 }
 
