@@ -49,6 +49,8 @@ renderAccounts();
 
       renderBudgets();
 
+      initializeDashboard();
+
       prepareForm();
 
       hideLoading();
@@ -67,6 +69,380 @@ renderAccounts();
 
 };
 
+/* =========================================
+   DASHBOARD
+========================================= */
+
+function initializeDashboard() {
+
+  populateDashboardMonths();
+
+  renderDashboard();
+
+  renderDashboardSummary();
+
+}
+
+
+/* =========================================
+   MONTH LIST
+========================================= */
+
+function populateDashboardMonths() {
+
+  const chartSelect =
+    document.getElementById("chartMonth");
+
+  const summarySelect =
+    document.getElementById("summaryMonth");
+
+
+  chartSelect.innerHTML = "";
+  summarySelect.innerHTML = "";
+
+
+  const months = {};
+
+
+  transactions.forEach(function (t) {
+
+    if (!t.date) {
+      return;
+    }
+
+
+    const parts =
+      String(t.date).split("-");
+
+
+    if (parts.length !== 3) {
+      return;
+    }
+
+
+    const key =
+      parts[0] + "-" + parts[1];
+
+
+    months[key] = true;
+
+  });
+
+
+  const monthKeys =
+    Object.keys(months)
+      .sort()
+      .reverse();
+
+
+  /* If no transactions exist */
+
+  if (monthKeys.length === 0) {
+
+    const now = new Date();
+
+    const key =
+      now.getFullYear() +
+      "-" +
+      String(now.getMonth() + 1)
+        .padStart(2, "0");
+
+    monthKeys.push(key);
+
+  }
+
+
+  monthKeys.forEach(function (key) {
+
+    const parts =
+      key.split("-");
+
+    const year =
+      Number(parts[0]);
+
+    const month =
+      Number(parts[1]);
+
+
+    const date =
+      new Date(year, month - 1, 1);
+
+
+    const label =
+      date.toLocaleString(
+        "en-IN",
+        {
+          month: "long",
+          year: "numeric"
+        }
+      );
+
+
+    const option1 =
+      document.createElement("option");
+
+    option1.value = key;
+    option1.textContent = label;
+
+    chartSelect.appendChild(option1);
+
+
+    const option2 =
+      document.createElement("option");
+
+    option2.value = key;
+    option2.textContent = label;
+
+    summarySelect.appendChild(option2);
+
+  });
+
+}
+
+
+/* =========================================
+   DAILY SPENDING CHART
+========================================= */
+
+function renderDashboard() {
+
+  const select =
+    document.getElementById("chartMonth");
+
+
+  if (!select) {
+    return;
+  }
+
+
+  const selectedMonth =
+    select.value;
+
+
+  const days = {};
+
+
+  transactions.forEach(function (t) {
+
+    if (t.type !== "Expense") {
+      return;
+    }
+
+
+    const parts =
+      String(t.date).split("-");
+
+
+    if (parts.length !== 3) {
+      return;
+    }
+
+
+    const key =
+      parts[0] + "-" +
+      parts[1];
+
+
+    if (key !== selectedMonth) {
+      return;
+    }
+
+
+    const day =
+      Number(parts[2]);
+
+
+    days[day] =
+      (days[day] || 0) +
+      (Number(t.amount) || 0);
+
+  });
+
+
+  const container =
+    document.getElementById(
+      "dailySpendingChart"
+    );
+
+
+  container.innerHTML = "";
+
+
+  const maxAmount =
+    Math.max(
+      ...Object.values(days),
+      1
+    );
+
+
+  const parts =
+    selectedMonth.split("-");
+
+
+  const year =
+    Number(parts[0]);
+
+  const month =
+    Number(parts[1]);
+
+
+  const daysInMonth =
+    new Date(
+      year,
+      month,
+      0
+    ).getDate();
+
+
+  for (
+    let day = 1;
+    day <= daysInMonth;
+    day++
+  ) {
+
+    const amount =
+      days[day] || 0;
+
+
+    const height =
+      amount === 0
+        ? 2
+        : Math.max(
+            5,
+            (amount / maxAmount) * 100
+          );
+
+
+    const barWrapper =
+      document.createElement("div");
+
+    barWrapper.className =
+      "chartBarWrapper";
+
+
+    barWrapper.innerHTML = `
+
+      <div
+        class="chartAmount"
+        title="Day ${day}: ₹${formatAmount(amount)}">
+
+        ${amount > 0
+          ? "₹" + formatAmount(amount)
+          : ""}
+
+      </div>
+
+      <div
+        class="chartBar"
+        style="height:${height}%"
+        title="Day ${day}: ₹${formatAmount(amount)}">
+      </div>
+
+      <div class="chartDay">
+        ${day}
+      </div>
+
+    `;
+
+
+    container.appendChild(
+      barWrapper
+    );
+
+  }
+
+}
+
+
+/* =========================================
+   MONTHLY SUMMARY
+========================================= */
+
+function renderDashboardSummary() {
+
+  const select =
+    document.getElementById(
+      "summaryMonth"
+    );
+
+
+  if (!select) {
+    return;
+  }
+
+
+  const selectedMonth =
+    select.value;
+
+
+  let income = 0;
+
+  let expense = 0;
+
+
+  transactions.forEach(function (t) {
+
+    const parts =
+      String(t.date).split("-");
+
+
+    if (parts.length !== 3) {
+      return;
+    }
+
+
+    const key =
+      parts[0] + "-" +
+      parts[1];
+
+
+    if (key !== selectedMonth) {
+      return;
+    }
+
+
+    const amount =
+      Number(t.amount) || 0;
+
+
+    if (t.type === "Income") {
+
+      income += amount;
+
+    }
+
+
+    if (t.type === "Expense") {
+
+      expense += amount;
+
+    }
+
+  });
+
+
+  const savings =
+    income - expense;
+
+
+  document.getElementById(
+    "dashboardIncome"
+  ).textContent =
+    "₹" + formatAmount(income);
+
+
+  document.getElementById(
+    "dashboardExpense"
+  ).textContent =
+    "₹" + formatAmount(expense);
+
+
+  document.getElementById(
+    "dashboardSavings"
+  ).textContent =
+    "₹" + formatAmount(savings);
+
+}
 
 /* =========================================
    TRANSACTIONS

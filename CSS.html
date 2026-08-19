@@ -843,4 +843,151 @@ tbody tr:hover {
   font-weight: 800;
 }
 
+/* =========================================
+   DASHBOARD
+========================================= */
+
+.dashboardMonthSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboardMonthSelector label {
+  font-size: 14px;
+  color: #475569;
+}
+
+.dashboardMonthSelector select {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+}
+
+
+/* =========================================
+   DASHBOARD CARD
+========================================= */
+
+.dashboardCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.dashboardCardHeader h2,
+.dashboardSummaryHeader h2 {
+  margin: 0;
+  color: #123f82;
+  font-size: 20px;
+}
+
+
+/* =========================================
+   DAILY CHART
+========================================= */
+
+.dailyChart {
+  height: 300px;
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  padding: 30px 10px 5px;
+  border-bottom: 1px solid #cbd5e1;
+  overflow-x: auto;
+}
+
+.chartBarWrapper {
+  min-width: 28px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.chartBar {
+  width: 20px;
+  min-height: 2px;
+  background: #2563eb;
+  border-radius: 4px 4px 0 0;
+}
+
+.chartDay {
+  margin-top: 7px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.chartAmount {
+  font-size: 9px;
+  color: #2563eb;
+  min-height: 14px;
+  white-space: nowrap;
+  transform: rotate(-45deg);
+}
+
+
+/* =========================================
+   MONTHLY SUMMARY
+========================================= */
+
+.dashboardSummarySection {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.dashboardSummaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboardSummaryCards {
+  display: grid;
+  grid-template-columns:
+    repeat(3, 1fr);
+  gap: 15px;
+}
+
+.dashboardSummaryCard {
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  background: #f8fafc;
+}
+
+.dashboardSummaryTitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.dashboardSummaryValue {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+
+  .dashboardSummaryCards {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboardSummaryHeader {
+    align-items: flex-start;
+    gap: 15px;
+    flex-direction: column;
+  }
+
+}
+
 </style>

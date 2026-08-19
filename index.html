@@ -46,6 +46,13 @@
 
       </button>
 
+      <button
+  class="navButton"
+  onclick="showPage('dashboard')">
+
+  📊 Dashboard
+
+</button>
 
       <button
         class="navButton"
@@ -102,6 +109,132 @@
 
   <main>
 
+    <!-- =====================================
+     DASHBOARD PAGE
+===================================== -->
+
+<section
+  id="dashboardPage"
+  class="page hidden">
+
+  <div class="pageHeader">
+
+    <h1>Dashboard</h1>
+
+    <div class="dashboardMonthSelector">
+
+      <label>Month</label>
+
+      <select
+        id="chartMonth"
+        onchange="renderDashboard()">
+      </select>
+
+    </div>
+
+  </div>
+
+
+  <!-- DAYWISE SPENDING -->
+
+  <div class="dashboardCard">
+
+    <div class="dashboardCardHeader">
+
+      <h2>Daily Spending</h2>
+
+    </div>
+
+    <div
+      id="dailySpendingChart"
+      class="dailyChart">
+
+    </div>
+
+  </div>
+
+
+  <!-- HISTORICAL SUMMARY -->
+
+  <div class="dashboardSummarySection">
+
+    <div class="dashboardSummaryHeader">
+
+      <h2>Monthly Summary</h2>
+
+      <div class="dashboardMonthSelector">
+
+        <label>Month</label>
+
+        <select
+          id="summaryMonth"
+          onchange="renderDashboardSummary()">
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="dashboardSummaryCards">
+
+
+      <div class="dashboardSummaryCard">
+
+        <div class="dashboardSummaryTitle">
+          Income
+        </div>
+
+        <div
+          id="dashboardIncome"
+          class="dashboardSummaryValue incomeSummary">
+
+          ₹0
+
+        </div>
+
+      </div>
+
+
+      <div class="dashboardSummaryCard">
+
+        <div class="dashboardSummaryTitle">
+          Expense
+        </div>
+
+        <div
+          id="dashboardExpense"
+          class="dashboardSummaryValue expenseSummary">
+
+          ₹0
+
+        </div>
+
+      </div>
+
+
+      <div class="dashboardSummaryCard">
+
+        <div class="dashboardSummaryTitle">
+          Savings
+        </div>
+
+        <div
+          id="dashboardSavings"
+          class="dashboardSummaryValue savingsSummary">
+
+          ₹0
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+</section>
 
     <!-- =====================================
          TRANSACTIONS PAGE
