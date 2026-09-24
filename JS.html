@@ -1049,6 +1049,12 @@ function renderTransactions() {
 
 function updateSummary() {
 
+  /* =====================================
+     TOTAL BALANCE
+     Uses all account opening balances
+     plus all-time income and expenses
+  ====================================== */
+
   let openingBalance = 0;
 
   accounts.forEach(function (account) {
@@ -1059,12 +1065,77 @@ function updateSummary() {
   });
 
 
+  /* =====================================
+     CURRENT MONTH
+     Income / Expense / Savings cards
+     show CURRENT MONTH only
+  ====================================== */
+
+  const now = new Date();
+
+  const currentYear =
+    now.getFullYear();
+
+  const currentMonth =
+    now.getMonth() + 1;
+
+
   let income = 0;
 
   let expense = 0;
 
 
   transactions.forEach(function (transaction) {
+
+    const dateText =
+      String(transaction.date || "").trim();
+
+    const parts =
+      dateText.split("-");
+
+    if (parts.length !== 3) {
+      return;
+    }
+
+
+    let transactionYear;
+    let transactionMonth;
+
+
+    /* yyyy-mm-dd */
+
+    if (parts[0].length === 4) {
+
+      transactionYear =
+        Number(parts[0]);
+
+      transactionMonth =
+        Number(parts[1]);
+
+    }
+
+    /* dd-mm-yyyy */
+
+    else {
+
+      transactionYear =
+        Number(parts[2]);
+
+      transactionMonth =
+        Number(parts[1]);
+
+    }
+
+
+    /* CURRENT MONTH ONLY */
+
+    if (
+      transactionYear !== currentYear ||
+      transactionMonth !== currentMonth
+    ) {
+      return;
+    }
+
 
     const amount =
       Number(transaction.amount) || 0;
@@ -1085,12 +1156,48 @@ function updateSummary() {
   });
 
 
+  /* =====================================
+     CURRENT MONTH SAVINGS
+  ====================================== */
+
   const savings =
     income - expense;
 
 
+  /* =====================================
+     TOTAL BALANCE
+     Keep this as overall/all-time balance
+  ====================================== */
+
+  let allTimeIncome = 0;
+
+  let allTimeExpense = 0;
+
+
+  transactions.forEach(function (transaction) {
+
+    const amount =
+      Number(transaction.amount) || 0;
+
+    if (transaction.type === "Income") {
+
+      allTimeIncome += amount;
+
+    }
+
+    else if (transaction.type === "Expense") {
+
+      allTimeExpense += amount;
+
+    }
+
+  });
+
+
   const totalBalance =
-    openingBalance + savings;
+    openingBalance +
+    allTimeIncome -
+    allTimeExpense;
 
 
   document.getElementById(
@@ -1117,7 +1224,6 @@ function updateSummary() {
     "₹" + formatAmount(savings);
 
 }
-
 
 /* =========================================
    SEARCH
@@ -4021,7 +4127,7 @@ function verifyDeletePassword() {
     return false;
   }
 
-  if (password !== "123") {
+  if (password !== "12345") {
 
     alert("Incorrect password.");
 
