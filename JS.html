@@ -2123,84 +2123,94 @@ function renderAccounts() {
   body.innerHTML = "";
   footer.innerHTML = "";
 
-
   let totalOpeningBalance = 0;
   let totalCurrentBalance = 0;
 
-  accounts.sort(function(a, b) {
-  return (Number(b.currentBalance) || 0) -
-         (Number(a.currentBalance) || 0);
-});
+  /* =====================================
+     CALCULATE ACTUAL CURRENT BALANCE
+     FOR EACH ACCOUNT
+  ====================================== */
 
-  accounts.forEach(function (a) {
+  const accountRows = accounts.map(function (a) {
 
     const openingBalance =
       Number(a.openingBalance) || 0;
 
-
-    /* =====================================
-       CURRENT BALANCE
-    ===================================== */
-
     let currentBalance =
       openingBalance;
-
 
     transactions.forEach(function (t) {
 
       const amount =
         Number(t.amount) || 0;
 
-
       /* Income received into this account */
-
       if (
         t.type === "Income" &&
         String(t.toAccount) === String(a.name)
       ) {
-
         currentBalance += amount;
-
       }
 
-
       /* Expense paid from this account */
-
       if (
         t.type === "Expense" &&
         String(t.fromAccount) === String(a.name)
       ) {
-
         currentBalance -= amount;
-
       }
 
-
       /* Transfer received */
-
       if (
         t.type === "Transfer" &&
         String(t.toAccount) === String(a.name)
       ) {
-
         currentBalance += amount;
-
       }
 
-
       /* Transfer sent */
-
       if (
         t.type === "Transfer" &&
         String(t.fromAccount) === String(a.name)
       ) {
-
         currentBalance -= amount;
-
       }
 
     });
 
+    return {
+      account: a,
+      openingBalance: openingBalance,
+      currentBalance: currentBalance
+    };
+
+  });
+
+
+  /* =====================================
+     SORT BY CURRENT BALANCE
+     HIGHEST TO LOWEST
+  ====================================== */
+
+  accountRows.sort(function (a, b) {
+    return b.currentBalance - a.currentBalance;
+  });
+
+
+  /* =====================================
+     DISPLAY ACCOUNTS
+  ====================================== */
+
+  accountRows.forEach(function (row) {
+
+    const a =
+      row.account;
+
+    const openingBalance =
+      row.openingBalance;
+
+    const currentBalance =
+      row.currentBalance;
 
     totalOpeningBalance +=
       openingBalance;
@@ -2239,7 +2249,7 @@ function renderAccounts() {
 
             <button
               class="editButton"
-              onclick="editAccount('${a.id}')">
+              onclick="editAccount('${escapeAttr(a.id)}')">
 
               Edit
 
@@ -2247,7 +2257,7 @@ function renderAccounts() {
 
             <button
               class="deleteButton"
-              onclick="deleteAccount('${a.id}')">
+              onclick="deleteAccount('${escapeAttr(a.id)}')">
 
               Delete
 
@@ -2266,25 +2276,26 @@ function renderAccounts() {
 
   /* =====================================
      TOTAL ROW
-  ===================================== */
+  ====================================== */
 
   footer.innerHTML = `
 
     <tr>
 
       <td colspan="3"></td>
-      
-     <td style="font-weight:700; font-size:18px">
 
-  ₹${formatAmount(totalOpeningBalance)}
+      <td style="font-weight:700; font-size:18px">
 
-</td>
+        ₹${formatAmount(totalOpeningBalance)}
 
-<td style="font-weight:700; font-size:18px">
+      </td>
 
-  ₹${formatAmount(totalCurrentBalance)}
+      <td style="font-weight:700; font-size:18px">
 
-</td>
+        ₹${formatAmount(totalCurrentBalance)}
+
+      </td>
+
       <td></td>
 
     </tr>
@@ -2319,75 +2330,101 @@ function renderCategories() {
 
   const today = new Date();
 
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
+  const currentMonth =
+    today.getMonth();
+
+  const currentYear =
+    today.getFullYear();
 
 
   /* =====================================
-     CATEGORY ROWS
+     CALCULATE CURRENT-MONTH TOTAL
+     FOR EACH CATEGORY FIRST
   ====================================== */
 
-  categories.sort(function(a, b) {
-  return (Number(b.total) || 0) -
-         (Number(a.total) || 0);
-});
+  const categoryRows =
+    categories.map(function (c) {
 
-  categories.forEach(function (c) {
-
-    let categoryTotal = 0;
+      let categoryTotal = 0;
 
 
-    transactions.forEach(function (t) {
+      transactions.forEach(function (t) {
 
-      /* Match transaction type with
-         category type */
+        /* Match transaction type with category type */
 
-      if (
-        String(t.type).trim().toLowerCase() !==
-        String(c.type).trim().toLowerCase()
-      ) {
-        return;
-      }
-
-
-      /* Match category */
-
-      if (
-        String(t.category).trim().toLowerCase() !==
-        String(c.name).trim().toLowerCase()
-      ) {
-        return;
-      }
+        if (
+          String(t.type).trim().toLowerCase() !==
+          String(c.type).trim().toLowerCase()
+        ) {
+          return;
+        }
 
 
-      /* Check current month */
+        /* Match category */
 
-      const transactionDate =
-        new Date(t.date);
-
-      if (
-        isNaN(transactionDate.getTime())
-      ) {
-        return;
-      }
+        if (
+          String(t.category).trim().toLowerCase() !==
+          String(c.name).trim().toLowerCase()
+        ) {
+          return;
+        }
 
 
-      if (
-        transactionDate.getMonth() === currentMonth &&
-        transactionDate.getFullYear() === currentYear
-      ) {
+        /* Check current month */
 
-        categoryTotal +=
-          Number(t.amount) || 0;
+        const transactionDate =
+          new Date(t.date);
 
-      }
+        if (
+          isNaN(transactionDate.getTime())
+        ) {
+          return;
+        }
+
+
+        if (
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        ) {
+
+          categoryTotal +=
+            Number(t.amount) || 0;
+
+        }
+
+      });
+
+
+      return {
+        category: c,
+        total: categoryTotal
+      };
 
     });
 
 
-    /* =================================
-       ADD ROW
-    ================================= */
+  /* =====================================
+     SORT BY CURRENT-MONTH TOTAL
+     HIGHEST TO LOWEST
+  ====================================== */
+
+  categoryRows.sort(function (a, b) {
+    return b.total - a.total;
+  });
+
+
+  /* =====================================
+     DISPLAY CATEGORIES
+  ====================================== */
+
+  categoryRows.forEach(function (row) {
+
+    const c =
+      row.category;
+
+    const categoryTotal =
+      row.total;
+
 
     body.innerHTML += `
 
@@ -2419,7 +2456,7 @@ function renderCategories() {
 
             <button
               class="editButton"
-              onclick="editCategory('${c.id}')">
+              onclick="editCategory('${escapeAttr(c.id)}')">
 
               Edit
 
@@ -2427,7 +2464,7 @@ function renderCategories() {
 
             <button
               class="deleteButton"
-              onclick="deleteCategory('${c.id}')">
+              onclick="deleteCategory('${escapeAttr(c.id)}')">
 
               Delete
 
@@ -3984,7 +4021,7 @@ function verifyDeletePassword() {
     return false;
   }
 
-  if (password !== "12345") {
+  if (password !== "123") {
 
     alert("Incorrect password.");
 
