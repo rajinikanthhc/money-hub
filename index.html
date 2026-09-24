@@ -90,6 +90,22 @@
       </button>
 
       <button
+        class="navButton"
+        onclick="showPage('assets')">
+
+        💰 Assets
+
+      </button>
+
+      <button
+        class="navButton"
+        onclick="showPage('liabilities')">
+
+        📋 Liabilities
+
+      </button>
+
+      <button
   class="navButton"
   onclick="openSheet()">
 
@@ -574,6 +590,101 @@
     </section>
 
 
+    <!-- =====================================
+         ASSETS PAGE
+    ====================================== -->
+
+    <section
+      id="assetsPage"
+      class="page hidden">
+
+      <div class="pageHeader">
+
+        <h1>Assets</h1>
+
+        <button
+          class="primaryButton"
+          onclick="openAssetModal()">
+
+          + Add Asset
+
+        </button>
+
+      </div>
+
+      <div class="tableContainer">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="assetsBody">
+          </tbody>
+
+          <tfoot id="assetsFooter">
+          </tfoot>
+
+        </table>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================
+         LIABILITIES PAGE
+    ====================================== -->
+
+    <section
+      id="liabilitiesPage"
+      class="page hidden">
+
+      <div class="pageHeader">
+
+        <h1>Liabilities</h1>
+
+        <button
+          class="primaryButton"
+          onclick="openLiabilityModal()">
+
+          + Add Liability
+
+        </button>
+
+      </div>
+
+      <div class="tableContainer">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody id="liabilitiesBody">
+          </tbody>
+
+          <tfoot id="liabilitiesFooter">
+          </tfoot>
+
+        </table>
+
+      </div>
+
+    </section>
+
   </main>
 
 
@@ -1021,6 +1132,77 @@
 
         </div>
 
+
+
+
+        <!-- =================================
+             ASSET FORM
+        ================================== -->
+
+        <div
+          id="assetForm"
+          class="managementForm hidden">
+
+          <div class="formGroup">
+
+            <label>Asset Category</label>
+
+            <input
+              type="text"
+              id="assetCategory"
+              placeholder="Enter asset category">
+
+          </div>
+
+          <div class="formGroup">
+
+            <label>Amount</label>
+
+            <input
+              type="number"
+              id="assetAmount"
+              min="0"
+              step="0.01"
+              placeholder="Enter amount">
+
+          </div>
+
+        </div>
+
+
+        <!-- =================================
+             LIABILITY FORM
+        ================================== -->
+
+        <div
+          id="liabilityForm"
+          class="managementForm hidden">
+
+          <div class="formGroup">
+
+            <label>Liability Category</label>
+
+            <input
+              type="text"
+              id="liabilityCategory"
+              placeholder="Enter liability category">
+
+          </div>
+
+          <div class="formGroup">
+
+            <label>Amount</label>
+
+            <input
+              type="number"
+              id="liabilityAmount"
+              min="0"
+              step="0.01"
+              placeholder="Enter amount">
+
+          </div>
+
+        </div>
 
 
         <!-- ERROR -->

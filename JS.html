@@ -13,6 +13,10 @@ let categories = [];
 
 let budgets = [];
 
+let assets = [];
+
+let liabilities = [];
+
 let filteredTransactions = [];
 
 let editingTransactionId = null;
@@ -37,6 +41,8 @@ window.onload = function () {
       categories = data.categories || [];
 
       budgets = data.budgets || [];
+      assets = data.assets || [];
+      liabilities = data.liabilities || [];
 
 
       renderTransactions();
@@ -48,6 +54,8 @@ renderAccounts();
       renderCategories();
 
       renderBudgets();
+      renderAssets();
+      renderLiabilities();
 
       initializeDashboard();
 
@@ -104,6 +112,26 @@ function populateDashboardMonths() {
   const months = {};
 
 
+  /* =====================================
+     ALWAYS INCLUDE CURRENT MONTH
+     Dashboard should open on current month
+  ====================================== */
+
+  const now = new Date();
+
+  const currentMonthKey =
+    now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0");
+
+  months[currentMonthKey] = true;
+
+
+  /* =====================================
+     ADD ALL TRANSACTION MONTHS
+     This keeps historical months available
+  ====================================== */
+
   transactions.forEach(function (t) {
 
     if (!t.date) {
@@ -129,27 +157,14 @@ function populateDashboardMonths() {
   });
 
 
+  /* =====================================
+     SORT NEWEST MONTH FIRST
+  ====================================== */
+
   const monthKeys =
     Object.keys(months)
       .sort()
       .reverse();
-
-
-  /* If no transactions exist */
-
-  if (monthKeys.length === 0) {
-
-    const now = new Date();
-
-    const key =
-      now.getFullYear() +
-      "-" +
-      String(now.getMonth() + 1)
-        .padStart(2, "0");
-
-    monthKeys.push(key);
-
-  }
 
 
   monthKeys.forEach(function (key) {
@@ -196,6 +211,14 @@ function populateDashboardMonths() {
     summarySelect.appendChild(option2);
 
   });
+
+
+  /* =====================================
+     FORCE CURRENT MONTH ON INITIAL LOAD
+  ====================================== */
+
+  chartSelect.value = currentMonthKey;
+  summarySelect.value = currentMonthKey;
 
 }
 
@@ -2052,6 +2075,8 @@ function reloadData() {
       categories = data.categories || [];
 
       budgets = data.budgets || [];
+      assets = data.assets || [];
+      liabilities = data.liabilities || [];
 
 
       renderTransactions();
@@ -2063,6 +2088,8 @@ renderAccounts();
 renderCategories();
 
 renderBudgets();
+      renderAssets();
+      renderLiabilities();
 
       hideLoading();
 
@@ -2100,6 +2127,10 @@ function renderAccounts() {
   let totalOpeningBalance = 0;
   let totalCurrentBalance = 0;
 
+  accounts.sort(function(a, b) {
+  return (Number(b.currentBalance) || 0) -
+         (Number(a.currentBalance) || 0);
+});
 
   accounts.forEach(function (a) {
 
@@ -2296,6 +2327,11 @@ function renderCategories() {
      CATEGORY ROWS
   ====================================== */
 
+  categories.sort(function(a, b) {
+  return (Number(b.total) || 0) -
+         (Number(a.total) || 0);
+});
+
   categories.forEach(function (c) {
 
     let categoryTotal = 0;
@@ -2430,46 +2466,166 @@ function renderBudgets() {
   let totalRemaining = 0;
 
 
+  /* =====================================
+     CURRENT MONTH
+  ====================================== */
+
+  const today = new Date();
+
+  const currentYear =
+    today.getFullYear();
+
+  const currentMonth =
+    today.getMonth() + 1;
+
+
+  /* =====================================
+     CHECK WHETHER TRANSACTION IS
+     IN CURRENT MONTH
+  ====================================== */
+
+  function isCurrentMonth(dateValue) {
+
+    if (!dateValue) {
+      return false;
+    }
+
+
+    const text =
+      String(dateValue).trim();
+
+
+    /*
+       Backend normally gives:
+       yyyy-mm-dd
+
+       Also support:
+       dd-mm-yyyy
+    */
+
+    const parts =
+      text.split("-");
+
+
+    if (parts.length !== 3) {
+      return false;
+    }
+
+
+    let year;
+    let month;
+
+
+    /* yyyy-mm-dd */
+
+    if (parts[0].length === 4) {
+
+      year =
+        Number(parts[0]);
+
+      month =
+        Number(parts[1]);
+
+    }
+
+    /* dd-mm-yyyy */
+
+    else {
+
+      year =
+        Number(parts[2]);
+
+      month =
+        Number(parts[1]);
+
+    }
+
+
+    return (
+      year === currentYear &&
+      month === currentMonth
+    );
+
+  }
+
+
+  /* =====================================
+     BUDGET ROWS
+  ====================================== */
+budgets.sort(function(a, b) {
+  return (Number(b.monthlyBudget) || 0) -
+         (Number(a.monthlyBudget) || 0);
+});
+  
   budgets.forEach(function (b) {
 
     const monthlyBudget =
       Number(b.monthlyBudget) || 0;
 
 
-    /* =====================================
-       CALCULATE UTILISED
-       Based on Expense transactions
-       matching the Budget Group
-    ===================================== */
-
     let utilised = 0;
 
 
+    /* =================================
+       CURRENT MONTH EXPENSES ONLY
+    ================================= */
+
     transactions.forEach(function (t) {
 
-      if (t.type !== "Expense") {
+      /* Expense only */
+
+      if (
+        String(t.type)
+          .trim()
+          .toLowerCase() !== "expense"
+      ) {
+
         return;
+
       }
 
+
+      /* CURRENT MONTH ONLY */
+
+      if (!isCurrentMonth(t.date)) {
+
+        return;
+
+      }
+
+
+      /* Find transaction category */
 
       const category =
         categories.find(function (c) {
 
-          return String(c.name).trim().toLowerCase() ===
-                 String(t.category).trim().toLowerCase();
+          return (
+            String(c.name)
+              .trim()
+              .toLowerCase() ===
+
+            String(t.category)
+              .trim()
+              .toLowerCase()
+          );
 
         });
 
 
       if (!category) {
+
         return;
+
       }
 
+
+      /* Match Budget Group */
 
       if (
         String(category.budgetGroup)
           .trim()
           .toLowerCase() ===
+
         String(b.category)
           .trim()
           .toLowerCase()
@@ -2487,10 +2643,19 @@ function renderBudgets() {
       monthlyBudget - utilised;
 
 
-    totalBudget += monthlyBudget;
-    totalUtilised += utilised;
-    totalRemaining += remaining;
+    totalBudget +=
+      monthlyBudget;
 
+    totalUtilised +=
+      utilised;
+
+    totalRemaining +=
+      remaining;
+
+
+    /* =================================
+       ROW
+    ================================= */
 
     body.innerHTML += `
 
@@ -2517,7 +2682,9 @@ function renderBudgets() {
             ? "budgetRemainingOver"
             : "budgetRemaining"
         }">
+
           ₹${formatAmount(remaining)}
+
         </td>
 
         <td>
@@ -2556,8 +2723,8 @@ function renderBudgets() {
 
 
   /* =====================================
-     TOTAL ROW
-  ===================================== */
+     TOTAL
+  ====================================== */
 
   footer.innerHTML = `
 
@@ -2588,6 +2755,281 @@ function renderBudgets() {
   `;
 
 }
+
+/* =========================================
+   ASSETS
+   Manual records only
+========================================= */
+
+function renderAssets() {
+
+  const body = document.getElementById("assetsBody");
+  const footer = document.getElementById("assetsFooter");
+
+  if (!body || !footer) return;
+
+  body.innerHTML = "";
+  footer.innerHTML = "";
+
+  let total = 0;
+
+  assets.sort(function(a, b) {
+  return (Number(b.amount) || 0) - (Number(a.amount) || 0);
+});
+
+  assets.forEach(function (a) {
+
+    const amount = Number(a.amount) || 0;
+    total += amount;
+
+    body.innerHTML += `
+      <tr>
+        <td>${escapeHtml(a.id)}</td>
+        <td>${escapeHtml(a.category)}</td>
+        <td style="font-weight:600">₹${formatAmount(amount)}</td>
+        <td>
+          <div class="actionButtons">
+            <button class="editButton" onclick="editAsset('${escapeAttr(a.id)}')">Edit</button>
+            <button class="deleteButton" onclick="deleteAsset('${escapeAttr(a.id)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  footer.innerHTML = `
+    <tr class="managementTotalRow">
+      <td></td>
+      <td style="font-weight:700">Total</td>
+      <td style="font-size:20px;font-weight:800">₹${formatAmount(total)}</td>
+      <td></td>
+    </tr>
+  `;
+}
+
+
+function renderLiabilities() {
+
+  const body = document.getElementById("liabilitiesBody");
+  const footer = document.getElementById("liabilitiesFooter");
+
+  if (!body || !footer) return;
+
+  body.innerHTML = "";
+  footer.innerHTML = "";
+
+  let total = 0;
+
+  liabilities.sort(function(a, b) {
+  return (Number(b.amount) || 0) - (Number(a.amount) || 0);
+});
+
+  liabilities.forEach(function (l) {
+
+    const amount = Number(l.amount) || 0;
+    total += amount;
+
+    body.innerHTML += `
+      <tr>
+        <td>${escapeHtml(l.id)}</td>
+        <td>${escapeHtml(l.category)}</td>
+        <td style="font-weight:600">₹${formatAmount(amount)}</td>
+        <td>
+          <div class="actionButtons">
+            <button class="editButton" onclick="editLiability('${escapeAttr(l.id)}')">Edit</button>
+            <button class="deleteButton" onclick="deleteLiability('${escapeAttr(l.id)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  footer.innerHTML = `
+    <tr class="managementTotalRow">
+      <td></td>
+      <td style="font-weight:700">Total</td>
+      <td style="font-size:20px;font-weight:800">₹${formatAmount(total)}</td>
+      <td></td>
+    </tr>
+  `;
+}
+
+
+function openAssetModal() {
+  openManagementModal("asset");
+}
+
+
+function openLiabilityModal() {
+  openManagementModal("liability");
+}
+
+
+function clearAssetForm() {
+  document.getElementById("managementId").value = "";
+  document.getElementById("assetCategory").value = "";
+  document.getElementById("assetAmount").value = "";
+}
+
+
+function clearLiabilityForm() {
+  document.getElementById("managementId").value = "";
+  document.getElementById("liabilityCategory").value = "";
+  document.getElementById("liabilityAmount").value = "";
+}
+
+
+function editAsset(id) {
+
+  const asset = assets.find(function (a) {
+    return String(a.id) === String(id);
+  });
+
+  if (!asset) return;
+
+  openManagementModal("asset");
+  managementEditId = id;
+
+  document.getElementById("managementModalTitle").textContent = "Edit Asset";
+  document.getElementById("managementId").value = asset.id;
+  document.getElementById("assetCategory").value = asset.category;
+  document.getElementById("assetAmount").value = asset.amount;
+}
+
+
+function editLiability(id) {
+
+  const liability = liabilities.find(function (l) {
+    return String(l.id) === String(id);
+  });
+
+  if (!liability) return;
+
+  openManagementModal("liability");
+  managementEditId = id;
+
+  document.getElementById("managementModalTitle").textContent = "Edit Liability";
+  document.getElementById("managementId").value = liability.id;
+  document.getElementById("liabilityCategory").value = liability.category;
+  document.getElementById("liabilityAmount").value = liability.amount;
+}
+
+
+function saveAssetData() {
+
+  const data = {
+    id: document.getElementById("managementId").value,
+    category: document.getElementById("assetCategory").value.trim(),
+    amount: document.getElementById("assetAmount").value
+  };
+
+  if (!data.category) {
+    showManagementError("Please enter asset category.");
+    return;
+  }
+
+  if (data.amount === "" || Number(data.amount) < 0) {
+    showManagementError("Please enter a valid asset amount.");
+    return;
+  }
+
+  if (isDuplicateName(data.category, assets, "category", managementEditId)) {
+    showManagementError("Asset already exists.");
+    return;
+  }
+
+  showLoading();
+
+  const action = managementEditId ? "updateAsset" : "addAsset";
+
+  google.script.run
+    .withSuccessHandler(function () {
+      closeManagementModal();
+      reloadData();
+    })
+    .withFailureHandler(function (error) {
+      hideLoading();
+      showManagementError(error.message);
+    })[action](data);
+}
+
+
+function saveLiabilityData() {
+
+  const data = {
+    id: document.getElementById("managementId").value,
+    category: document.getElementById("liabilityCategory").value.trim(),
+    amount: document.getElementById("liabilityAmount").value
+  };
+
+  if (!data.category) {
+    showManagementError("Please enter liability category.");
+    return;
+  }
+
+  if (data.amount === "" || Number(data.amount) < 0) {
+    showManagementError("Please enter a valid liability amount.");
+    return;
+  }
+
+  if (isDuplicateName(data.category, liabilities, "category", managementEditId)) {
+    showManagementError("Liability already exists.");
+    return;
+  }
+
+  showLoading();
+
+  const action = managementEditId ? "updateLiability" : "addLiability";
+
+  google.script.run
+    .withSuccessHandler(function () {
+      closeManagementModal();
+      reloadData();
+    })
+    .withFailureHandler(function (error) {
+      hideLoading();
+      showManagementError(error.message);
+    })[action](data);
+}
+
+
+function deleteAsset(id) {
+
+  if (!confirm("Delete this asset?")) return;
+  if (!verifyDeletePassword()) return;
+
+  showLoading();
+
+  google.script.run
+    .withSuccessHandler(function () {
+      reloadData();
+    })
+    .withFailureHandler(function (error) {
+      hideLoading();
+      alert(error.message);
+    })
+    .deleteAsset(id);
+}
+
+
+function deleteLiability(id) {
+
+  if (!confirm("Delete this liability?")) return;
+  if (!verifyDeletePassword()) return;
+
+  showLoading();
+
+  google.script.run
+    .withSuccessHandler(function () {
+      reloadData();
+    })
+    .withFailureHandler(function (error) {
+      hideLoading();
+      alert(error.message);
+    })
+    .deleteLiability(id);
+}
+
 
 /* =========================================
    PAGE NAVIGATION
@@ -2914,6 +3356,34 @@ function openManagementModal(mode) {
     ).classList.remove("hidden");
 
     clearBudgetForm();
+
+  }
+
+  if (mode === "asset") {
+
+    document.getElementById(
+      "managementModalTitle"
+    ).textContent = "Add Asset";
+
+    document.getElementById(
+      "assetForm"
+    ).classList.remove("hidden");
+
+    clearAssetForm();
+
+  }
+
+  if (mode === "liability") {
+
+    document.getElementById(
+      "managementModalTitle"
+    ).textContent = "Add Liability";
+
+    document.getElementById(
+      "liabilityForm"
+    ).classList.remove("hidden");
+
+    clearLiabilityForm();
 
   }
 
@@ -3483,7 +3953,20 @@ function saveManagementData() {
 
       })[action](data);
 
+    return;
 
+  }
+
+
+  if (managementMode === "asset") {
+    saveAssetData();
+    return;
+  }
+
+
+  if (managementMode === "liability") {
+    saveLiabilityData();
+    return;
   }
 
 }

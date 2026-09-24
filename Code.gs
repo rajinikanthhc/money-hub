@@ -8,7 +8,9 @@ const SHEETS = {
   ACCOUNTS: "Accounts",
   TRANSACTIONS: "Transactions",
   BUDGET: "Monthly Budget",
-  CATEGORIES: "Categories"
+  CATEGORIES: "Categories",
+  ASSETS: "Assets",
+  LIABILITIES: "Liabilities"
 };
 
 
@@ -49,7 +51,9 @@ function getInitialData() {
     accounts: getAccounts(),
     transactions: getTransactions(),
     categories: getCategories(),
-    budgets: getBudgets()
+    budgets: getBudgets(),
+    assets: getAssets(),
+    liabilities: getLiabilities()
   };
 
 }
@@ -872,6 +876,290 @@ function deleteBudget(id) {
   throw new Error("Budget not found.");
 }
 
+
+
+/* =========================================
+   ASSETS
+   Manual records only - no transaction linkage
+========================================= */
+
+function getAssets() {
+
+  const sheet = SS.getSheetByName(SHEETS.ASSETS);
+
+  if (!sheet) {
+    throw new Error("Assets sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length <= 1) {
+    return [];
+  }
+
+  return values
+    .slice(1)
+    .filter(row => row[0] !== "")
+    .map(row => ({
+      id: row[0],
+      category: row[1] || "",
+      amount: Number(row[2]) || 0
+    }));
+
+}
+
+
+function addAsset(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.ASSETS);
+
+  if (!sheet) {
+    throw new Error("Assets sheet not found.");
+  }
+
+  if (!data.category || !String(data.category).trim()) {
+    throw new Error("Please enter asset category.");
+  }
+
+  if (Number(data.amount) < 0) {
+    throw new Error("Please enter a valid asset amount.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+    return String(row[1]).trim().toLowerCase() ===
+           String(data.category).trim().toLowerCase();
+  });
+
+  if (duplicate) {
+    throw new Error("Asset already exists.");
+  }
+
+  const newId = getNextId(sheet);
+
+  sheet.appendRow([
+    newId,
+    String(data.category).trim(),
+    Number(data.amount) || 0
+  ]);
+
+  return { success: true };
+}
+
+
+function updateAsset(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.ASSETS);
+
+  if (!sheet) {
+    throw new Error("Assets sheet not found.");
+  }
+
+  if (!data.category || !String(data.category).trim()) {
+    throw new Error("Please enter asset category.");
+  }
+
+  if (Number(data.amount) < 0) {
+    throw new Error("Please enter a valid asset amount.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+    return String(row[0]) !== String(data.id) &&
+           String(row[1]).trim().toLowerCase() ===
+           String(data.category).trim().toLowerCase();
+  });
+
+  if (duplicate) {
+    throw new Error("Asset already exists.");
+  }
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(data.id)) {
+
+      sheet.getRange(i + 1, 1, 1, 3).setValues([[
+        data.id,
+        String(data.category).trim(),
+        Number(data.amount) || 0
+      ]]);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Asset not found.");
+}
+
+
+function deleteAsset(id) {
+
+  const sheet = SS.getSheetByName(SHEETS.ASSETS);
+
+  if (!sheet) {
+    throw new Error("Assets sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(id)) {
+
+      sheet.deleteRow(i + 1);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Asset not found.");
+}
+
+
+/* =========================================
+   LIABILITIES
+   Manual records only - no transaction linkage
+========================================= */
+
+function getLiabilities() {
+
+  const sheet = SS.getSheetByName(SHEETS.LIABILITIES);
+
+  if (!sheet) {
+    throw new Error("Liabilities sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  if (values.length <= 1) {
+    return [];
+  }
+
+  return values
+    .slice(1)
+    .filter(row => row[0] !== "")
+    .map(row => ({
+      id: row[0],
+      category: row[1] || "",
+      amount: Number(row[2]) || 0
+    }));
+
+}
+
+
+function addLiability(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.LIABILITIES);
+
+  if (!sheet) {
+    throw new Error("Liabilities sheet not found.");
+  }
+
+  if (!data.category || !String(data.category).trim()) {
+    throw new Error("Please enter liability category.");
+  }
+
+  if (Number(data.amount) < 0) {
+    throw new Error("Please enter a valid liability amount.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+    return String(row[1]).trim().toLowerCase() ===
+           String(data.category).trim().toLowerCase();
+  });
+
+  if (duplicate) {
+    throw new Error("Liability already exists.");
+  }
+
+  const newId = getNextId(sheet);
+
+  sheet.appendRow([
+    newId,
+    String(data.category).trim(),
+    Number(data.amount) || 0
+  ]);
+
+  return { success: true };
+}
+
+
+function updateLiability(data) {
+
+  const sheet = SS.getSheetByName(SHEETS.LIABILITIES);
+
+  if (!sheet) {
+    throw new Error("Liabilities sheet not found.");
+  }
+
+  if (!data.category || !String(data.category).trim()) {
+    throw new Error("Please enter liability category.");
+  }
+
+  if (Number(data.amount) < 0) {
+    throw new Error("Please enter a valid liability amount.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  const duplicate = values.slice(1).some(function(row) {
+    return String(row[0]) !== String(data.id) &&
+           String(row[1]).trim().toLowerCase() ===
+           String(data.category).trim().toLowerCase();
+  });
+
+  if (duplicate) {
+    throw new Error("Liability already exists.");
+  }
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(data.id)) {
+
+      sheet.getRange(i + 1, 1, 1, 3).setValues([[
+        data.id,
+        String(data.category).trim(),
+        Number(data.amount) || 0
+      ]]);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Liability not found.");
+}
+
+
+function deleteLiability(id) {
+
+  const sheet = SS.getSheetByName(SHEETS.LIABILITIES);
+
+  if (!sheet) {
+    throw new Error("Liabilities sheet not found.");
+  }
+
+  const values = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < values.length; i++) {
+
+    if (String(values[i][0]) === String(id)) {
+
+      sheet.deleteRow(i + 1);
+
+      return { success: true };
+    }
+
+  }
+
+  throw new Error("Liability not found.");
+}
 
 /* =========================================
    GENERIC NEXT ID
